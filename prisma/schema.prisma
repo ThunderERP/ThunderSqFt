@@ -1,0 +1,170 @@
+// ThunderERP Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. THE TENANT (The "Apartment Building")
+model Tenant {
+  id        Int      @id @default(autoincrement())
+  name      String
+  plan_type String   @default("BASIC") // BASIC, PREMIUM, ENTERPRISE
+  createdAt DateTime @default(now())
+
+  // Relations
+  products  Product[]
+  customers Customer[]
+  suppliers Supplier[]
+  orders    Order[]
+  purchases Purchase[]
+  invoices  Invoice[]
+}
+
+// 2. MASTER DATA (The "Foundations")
+model Product {
+  id             Int     @id @default(autoincrement())
+  tenant_id      Int
+  tenant         Tenant  @relation(fields: [tenant_id], references: [id])
+  name           String
+  category       String?
+  unit           String  @default("pcs")
+  price          Decimal @db.Decimal(12, 2)
+  gst_percentage Decimal @db.Decimal(5, 2)
+  metadata       Json? // For the 2-month customization buffer
+
+  // Relations
+  inventory       Inventory?
+  order_items     OrderItem[]
+  purchase_items  PurchaseItem[]
+  stock_movements StockMovement[]
+}
+
+model Customer {
+  id        Int     @id @default(autoincrement())
+  tenant_id Int
+  tenant    Tenant  @relation(fields: [tenant_id], references: [id])
+  name      String
+  phone     String?
+  email     String?
+  metadata  Json?
+
+  orders Order[]
+}
+
+model Supplier {
+  id        Int     @id @default(autoincrement())
+  tenant_id Int
+  tenant    Tenant  @relation(fields: [tenant_id], references: [id])
+  name      String
+  email     String?
+
+  purchases Purchase[]
+}
+
+// 3. INVENTORY (The "State")
+model Inventory {
+  id            Int     @id @default(autoincrement())
+  product_id    Int     @unique
+  product       Product @relation(fields: [product_id], references: [id])
+  available_qty Int     @default(0)
+  reserved_qty  Int     @default(0)
+  reorder_level Int     @default(10)
+}
+
+// 4. SALES FLOW
+model Order {
+  id           Int      @id @default(autoincrement())
+  tenant_id    Int
+  tenant       Tenant   @relation(fields: [tenant_id], references: [id])
+  customer_id  Int
+  customer     Customer @relation(fields: [customer_id], references: [id])
+  order_date   DateTime @default(now())
+  status       String   @default("DRAFT")
+  total_amount Decimal  @db.Decimal(12, 2)
+  metadata     Json?
+
+  items   OrderItem[]
+  invoice Invoice?
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  order_id   Int
+  order      Order   @relation(fields: [order_id], references: [id])
+  product_id Int
+  product    Product @relation(fields: [product_id], references: [id])
+  quantity   Int
+  unit_price Decimal @db.Decimal(12, 2)
+}
+
+// 5. PROCUREMENT FLOW
+model Purchase {
+  id          Int      @id @default(autoincrement())
+  tenant_id   Int
+  tenant      Tenant   @relation(fields: [tenant_id], references: [id])
+  supplier_id Int
+  supplier    Supplier @relation(fields: [supplier_id], references: [id])
+  date        DateTime @default(now())
+  status      String   @default("PENDING")
+
+  items PurchaseItem[]
+}
+
+model PurchaseItem {
+  id          Int      @id @default(autoincrement())
+  purchase_id Int
+  purchase    Purchase @relation(fields: [purchase_id], references: [id])
+  product_id  Int
+  product     Product  @relation(fields: [product_id], references: [id])
+  quantity    Int
+  unit_price  Decimal  @db.Decimal(12, 2)
+}
+
+// 6. FINANCE & AUDIT
+model Invoice {
+  id         Int     @id @default(autoincrement())
+  tenant_id  Int
+  tenant     Tenant  @relation(fields: [tenant_id], references: [id])
+  order_id   Int     @unique
+  order      Order   @relation(fields: [order_id], references: [id])
+  tax_amount Decimal @db.Decimal(12, 2)
+  status     String  @default("UNPAID")
+
+  payments Payment[]
+}
+
+model Payment {
+  id         Int      @id @default(autoincrement())
+  tenant_id  Int
+  invoice_id Int
+  invoice    Invoice  @relation(fields: [invoice_id], references: [id])
+  amount     Decimal  @db.Decimal(12, 2)
+  method     String // UPI, BANK_TRANSFER, CASH
+  date       DateTime @default(now())
+
+  transaction Transaction?
+}
+
+model Transaction {
+  id         Int      @id @default(autoincrement())
+  payment_id Int      @unique
+  payment    Payment  @relation(fields: [payment_id], references: [id])
+  type       String // DEBIT or CREDIT
+  amount     Decimal  @db.Decimal(12, 2)
+  entry_date DateTime @default(now())
+}
+
+model StockMovement {
+  id             Int      @id @default(autoincrement())
+  product_id     Int
+  product        Product  @relation(fields: [product_id], references: [id])
+  quantity       Int
+  type           String // IN or OUT
+  reference_type String // ORDER or PURCHASE
+  reference_id   Int
+  date           DateTime @default(now())
+}

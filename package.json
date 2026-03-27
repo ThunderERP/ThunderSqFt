@@ -1,0 +1,28 @@
+{
+<<<<<<< HEAD
+  "name": "thunder-erp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@prisma/client": "^7.5.0",
+    "dotenv": "^17.3.1",
+    "prisma": "^7.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0"
+=======
+  "dependencies": {
+    "@hono/node-server": "^1.19.11",
+    "hono": "^4.12.9"
+>>>>>>> cbe9b4b8101624211dab3ba693792be20799ed5e
+  }
+}

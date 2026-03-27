@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: thunder-postgres
+    environment:
+      POSTGRES_PASSWORD: admin5433
+      POSTGRES_DB: thunder_erp
+      POSTGRES_USER: admin
+    ports:
+      - "5433:5432" #   👈 IMPORTANT change
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
