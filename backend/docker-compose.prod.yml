@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  backend:
+    image: ${DOCKER_IMAGE:-thundererp/thunder-erp-backend:latest}
+    container_name: thunder-backend
+    env_file: .env
+    ports:
+      - "3000:3000"
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -1,0 +1,494 @@
+// ThunderERP — Prisma Schema
+// Derived from: ER Diagram, SRS Data Dictionary, Component Diagram
+// All state machines enforced in services; all FKs enforced here.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  DEVELOPER_ADMIN
+  BUSINESS_OWNER
+  SALES_MANAGER
+  SALES_STAFF
+  INVENTORY_MANAGER
+  FINANCE_MANAGER
+  ACCOUNTANT
+  CRM_SUPPORT
+  REFUND_HANDLER
+  MANAGER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  RETURNED
+}
+
+enum PurchaseStatus {
+  PENDING
+  APPROVED
+  RECEIVED
+  COMPLETED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PARTIAL
+  PAID
+  FAILED
+}
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum ReturnType {
+  REFUND
+  RETURN
+  REPLACEMENT
+}
+
+enum StockMovementType {
+  INWARD
+  OUTWARD
+  ADJUSTMENT
+  RESERVATION
+  RESERVATION_RELEASE
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  BANK
+}
+
+enum TransactionType {
+  DEBIT
+  CREDIT
+}
+
+enum TrackingStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+}
+
+// ─── USER & AUTH ──────────────────────────────────────────────────────────────
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(SALES_STAFF)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations to audit
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+// ─── CUSTOMERS ────────────────────────────────────────────────────────────────
+
+model Customer {
+  id                     Int      @id @default(autoincrement())
+  name                   String
+  phone                  String   @unique
+  email                  String?
+  address                String?  @db.Text
+  preferredPaymentMethod PaymentMethod? @map("preferred_payment_method")
+  isActive               Boolean  @default(true) @map("is_active")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+  createdBy              Int      @map("created_by")
+
+  orders   Order[]
+
+  @@map("customers")
+}
+
+// ─── SUPPLIERS ────────────────────────────────────────────────────────────────
+
+model Supplier {
+  id        Int       @id @default(autoincrement())
+  name      String
+  phone     String?
+  email     String?
+  address   String?   @db.Text
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  createdBy Int       @map("created_by")
+
+  purchases Purchase[]
+
+  @@map("suppliers")
+}
+
+// ─── PRODUCTS ─────────────────────────────────────────────────────────────────
+
+model Product {
+  id                 Int       @id @default(autoincrement())
+  name               String
+  category           String?
+  unit               String    @default("pcs")
+  price              Decimal   @db.Decimal(12, 2)
+  gstPercentage      Decimal   @db.Decimal(5, 2)  @default(18.00) @map("gst_percentage")
+  discountPercentage Decimal   @db.Decimal(5, 2)  @default(0.00) @map("discount_percentage")
+  expiryDate         DateTime? @map("expiry_date")
+  manufacturingDate  DateTime? @map("manufacturing_date")
+  isActive           Boolean   @default(true) @map("is_active")
+  deletedAt          DateTime? @map("deleted_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  createdBy          Int       @map("created_by")
+
+  inventory      Inventory?
+  orderItems     OrderItem[]
+  purchaseItems  PurchaseItem[]
+  stockMovements StockMovement[]
+  returnItems    Return[]
+
+  @@map("products")
+}
+
+// ─── INVENTORY ────────────────────────────────────────────────────────────────
+
+model Inventory {
+  id            Int     @id @default(autoincrement())
+  productId     Int     @unique @map("product_id")
+  product       Product @relation(fields: [productId], references: [id])
+  availableQty  Int     @default(0) @map("available_qty")
+  reservedQty   Int     @default(0) @map("reserved_qty")
+  reorderLevel  Int     @default(10) @map("reorder_level")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("inventory")
+}
+
+// ─── STOCK MOVEMENTS ──────────────────────────────────────────────────────────
+
+model StockMovement {
+  id            Int               @id @default(autoincrement())
+  productId     Int               @map("product_id")
+  product       Product           @relation(fields: [productId], references: [id])
+  type          StockMovementType
+  quantity      Int
+  referenceType String            @map("reference_type") // "ORDER" | "PURCHASE" | "RETURN" | "ADJUSTMENT"
+  referenceId   Int               @map("reference_id")
+  note          String?           @db.Text
+  createdAt     DateTime          @default(now()) @map("created_at")
+  createdBy     Int               @map("created_by")
+
+  @@index([productId])
+  @@index([referenceType, referenceId])
+  @@map("stock_movements")
+}
+
+// ─── ORDERS ───────────────────────────────────────────────────────────────────
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  customerId  Int         @map("customer_id")
+  customer    Customer    @relation(fields: [customerId], references: [id])
+  orderDate   DateTime    @default(now()) @map("order_date")
+  status      OrderStatus @default(PENDING)
+  totalAmount Decimal     @db.Decimal(12, 2) @default(0) @map("total_amount")
+  discount    Decimal     @db.Decimal(12, 2) @default(0)
+  taxAmount   Decimal     @db.Decimal(12, 2) @default(0) @map("tax_amount")
+  notes       String?     @db.Text
+  isActive    Boolean     @default(true) @map("is_active")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  createdBy   Int         @map("created_by")
+  updatedBy   Int?        @map("updated_by")
+
+  items    OrderItem[]
+  invoice  Invoice?
+  tracking Tracking?
+  returns  Return[]
+
+  @@index([customerId])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  orderId    Int     @map("order_id")
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  Int     @map("product_id")
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
+  unitPrice  Decimal @db.Decimal(12, 2) @map("unit_price")  // Price at time of order
+  gstPct     Decimal @db.Decimal(5, 2)  @map("gst_pct")
+  discountPct Decimal @db.Decimal(5, 2) @default(0) @map("discount_pct")
+  lineTotal  Decimal @db.Decimal(12, 2) @map("line_total")
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// ─── TRACKING ─────────────────────────────────────────────────────────────────
+
+model Tracking {
+  id            Int            @id @default(autoincrement())
+  orderId       Int            @unique @map("order_id")
+  order         Order          @relation(fields: [orderId], references: [id])
+  status        TrackingStatus @default(PENDING)
+  trackingDate  DateTime?      @map("tracking_date")
+  address       String?        @db.Text
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  updatedBy     Int?           @map("updated_by")
+
+  @@map("tracking")
+}
+
+// ─── PURCHASES ────────────────────────────────────────────────────────────────
+
+model Purchase {
+  id                   Int            @id @default(autoincrement())
+  supplierId           Int            @map("supplier_id")
+  supplier             Supplier       @relation(fields: [supplierId], references: [id])
+  purchaseDate         DateTime       @default(now()) @map("purchase_date")
+  expectedDeliveryDate DateTime?      @map("expected_delivery_date")
+  status               PurchaseStatus @default(PENDING)
+  totalAmount          Decimal        @db.Decimal(12, 2) @default(0) @map("total_amount")
+  notes                String?        @db.Text
+  approvedBy           Int?           @map("approved_by")
+  approvedAt           DateTime?      @map("approved_at")
+  isActive             Boolean        @default(true) @map("is_active")
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+  createdBy            Int            @map("created_by")
+
+  items PurchaseItem[]
+
+  @@index([supplierId])
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id         Int      @id @default(autoincrement())
+  purchaseId Int      @map("purchase_id")
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  productId  Int      @map("product_id")
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Int
+  unitPrice  Decimal  @db.Decimal(12, 2) @map("unit_price")
+  lineTotal  Decimal  @db.Decimal(12, 2) @map("line_total")
+
+  @@index([purchaseId])
+  @@map("purchase_items")
+}
+
+// ─── INVOICES ─────────────────────────────────────────────────────────────────
+
+model Invoice {
+  id              Int           @id @default(autoincrement())
+  orderId         Int           @unique @map("order_id")
+  order           Order         @relation(fields: [orderId], references: [id])
+  invoiceDate     DateTime      @default(now()) @map("invoice_date")
+  taxAmount       Decimal       @db.Decimal(12, 2) @map("tax_amount")
+  deliveryCharges Decimal       @db.Decimal(12, 2) @default(0) @map("delivery_charges")
+  totalAmount     Decimal       @db.Decimal(12, 2) @map("total_amount")
+  paidAmount      Decimal       @db.Decimal(12, 2) @default(0) @map("paid_amount")
+  status          InvoiceStatus @default(PENDING)
+  dueDate         DateTime?     @map("due_date")
+  isActive        Boolean       @default(true) @map("is_active")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  payments Payment[]
+  returns  Return[]
+
+  @@map("invoices")
+}
+
+// ─── PAYMENTS ─────────────────────────────────────────────────────────────────
+
+model Payment {
+  id            Int           @id @default(autoincrement())
+  invoiceId     Int           @map("invoice_id")
+  invoice       Invoice       @relation(fields: [invoiceId], references: [id])
+  amount        Decimal       @db.Decimal(12, 2)
+  paymentMethod PaymentMethod @map("payment_method")
+  referenceId   String?       @map("reference_id")   // UPI txn id, bank ref, etc.
+  date          DateTime      @default(now())
+  notes         String?       @db.Text
+  createdBy     Int           @map("created_by")
+
+  transaction Transaction?
+
+  @@index([invoiceId])
+  @@map("payments")
+}
+
+// ─── TRANSACTIONS (Ledger) ────────────────────────────────────────────────────
+
+model Transaction {
+  id          Int             @id @default(autoincrement())
+  paymentId   Int             @unique @map("payment_id")
+  payment     Payment         @relation(fields: [paymentId], references: [id])
+  type        TransactionType
+  amount      Decimal         @db.Decimal(12, 2)
+  accountCode String          @map("account_code") // "CASH", "ACCOUNTS_RECEIVABLE", etc.
+  status      String          @default("POSTED")
+  entryDate   DateTime        @default(now()) @map("entry_date")
+  createdBy   Int             @map("created_by")
+
+  @@map("transactions")
+}
+
+// ─── RETURNS ─────────────────────────────────────────────────────────────────
+
+model Return {
+  id          Int          @id @default(autoincrement())
+  orderId     Int          @map("order_id")
+  order       Order        @relation(fields: [orderId], references: [id])
+  invoiceId   Int          @map("invoice_id")
+  invoice     Invoice      @relation(fields: [invoiceId], references: [id])
+  productId   Int          @map("product_id")
+  product     Product      @relation(fields: [productId], references: [id])
+  quantity    Int
+  type        ReturnType
+  reason      String       @db.Text
+  status      ReturnStatus @default(REQUESTED)
+  refundAmt   Decimal?     @db.Decimal(12, 2) @map("refund_amt")
+  resolvedAt  DateTime?    @map("resolved_at")
+  resolvedBy  Int?         @map("resolved_by")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  createdBy   Int          @map("created_by")
+
+  @@index([orderId])
+  @@map("returns")
+}
+
+// ─── CRM: LEADS ──────────────────────────────────────────────────────────────
+
+model Lead {
+  id          Int      @id @default(autoincrement())
+  name        String
+  phone       String?
+  email       String?
+  source      String?  // WEBSITE, REFERRAL, COLD_CALL, etc.
+  status      String   @default("NEW") // NEW, CONTACTED, QUALIFIED, CONVERTED, LOST
+  notes       String?  @db.Text
+  assignedTo  Int?     @map("assigned_to")
+  convertedToCustomerId Int? @map("converted_to_customer_id")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdBy   Int      @map("created_by")
+
+  @@map("leads")
+}
+
+// ─── CRM: COMPLAINTS ─────────────────────────────────────────────────────────
+
+model Complaint {
+  id          Int      @id @default(autoincrement())
+  customerId  Int      @map("customer_id")
+  subject     String
+  description String   @db.Text
+  status      String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  resolvedAt  DateTime? @map("resolved_at")
+  resolvedBy  Int?     @map("resolved_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdBy   Int      @map("created_by")
+
+  @@index([customerId])
+  @@map("complaints")
+}
+
+// ─── AUDIT LOG ────────────────────────────────────────────────────────────────
+// Non-volatile per SRS Section 6. Every critical action logged here.
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  action      String                  // "ORDER_CREATED", "STOCK_RESERVED", etc.
+  entityType  String   @map("entity_type") // "Order", "Invoice", "Payment", etc.
+  entityId    Int      @map("entity_id")
+  oldValue    Json?    @map("old_value")
+  newValue    Json?    @map("new_value")
+  ipAddress   String?  @map("ip_address")
+  timestamp   DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+// ─── PAYROLL & EMPLOYEES ─────────────────────────────────────────────────────
+
+enum Department {
+  ENGINEERING
+  MANAGEMENT
+  MARKETING
+  SALES
+  HR
+  FINANCE
+}
+
+model Employee {
+  id            Int         @id @default(autoincrement())
+  employeeId    String      @unique @map("employee_id") // Custom ID like "EMP001"
+  name          String
+  email         String?     @unique
+  phone         String?
+  department    Department
+  basicSalary   Decimal     @db.Decimal(12, 2) @map("basic_salary")
+  allowances    Decimal     @db.Decimal(12, 2) @default(0)
+  deductions    Decimal     @db.Decimal(12, 2) @default(0)
+  isActive      Boolean     @default(true) @map("is_active")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  createdBy     Int         @map("created_by")
+
+  salaryRecords SalaryRecord[]
+
+  @@map("employees")
+}
+
+model SalaryRecord {
+  id            Int       @id @default(autoincrement())
+  employeeId    Int       @map("employee_id")
+  employee      Employee  @relation(fields: [employeeId], references: [id])
+  paymentDate   DateTime  @default(now()) @map("payment_date")
+  basicSalary   Decimal   @db.Decimal(12, 2) @map("basic_salary")
+  allowances    Decimal   @db.Decimal(12, 2) @map("allowances")
+  deductions    Decimal   @db.Decimal(12, 2) @map("deductions")
+  netSalary     Decimal   @db.Decimal(12, 2) @map("net_salary")
+  status        String    @default("PAID") // "PENDING", "PAID"
+  createdAt     DateTime  @default(now()) @map("created_at")
+  createdBy     Int       @map("created_by")
+
+  @@index([employeeId])
+  @@index([paymentDate])
+  @@map("salary_records")
+}

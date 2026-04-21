@@ -1,0 +1,30 @@
+# ThunderERP CODEOWNERS
+# Tech Lead reviews everything
+*                                    @thundererp/tech-leads
+
+# Backend — module-specific ownership
+backend/src/modules/finance/         @thundererp/finance-leads @thundererp/tech-leads
+backend/src/modules/invoices/        @thundererp/finance-leads @thundererp/tech-leads
+backend/src/modules/payments/        @thundererp/finance-leads @thundererp/tech-leads
+backend/src/modules/inventory/       @thundererp/inventory-leads @thundererp/tech-leads
+backend/src/modules/products/        @thundererp/inventory-leads @thundererp/tech-leads
+backend/src/modules/purchases/       @thundererp/inventory-leads @thundererp/tech-leads
+backend/src/modules/auth/            @thundererp/tech-leads
+backend/src/common/guards/           @thundererp/tech-leads
+backend/src/modules/crm/             @thundererp/crm-leads @thundererp/tech-leads
+backend/src/modules/returns/         @thundererp/crm-leads @thundererp/finance-leads
+
+# Database — any schema change requires Tech Lead
+backend/prisma/                      @thundererp/tech-leads
+
+# Frontend
+frontend/src/modules/finance/        @thundererp/finance-leads @thundererp/tech-leads
+frontend/src/modules/inventory/      @thundererp/inventory-leads @thundererp/tech-leads
+frontend/src/modules/crm/            @thundererp/crm-leads @thundererp/tech-leads
+frontend/src/shared/                 @thundererp/tech-leads
+
+# Infrastructure & CI/CD
+.github/                             @thundererp/tech-leads
+backend/Dockerfile                   @thundererp/tech-leads
+backend/docker-compose*.yml          @thundererp/tech-leads
+infra/                               @thundererp/tech-leads

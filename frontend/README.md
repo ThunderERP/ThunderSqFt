@@ -1,75 +1,44 @@
-# React + TypeScript + Vite
+# ThunderERP — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> React 18 · TypeScript · Vite · TanStack Query · Zustand · Tailwind CSS
 
-Currently, two official plugins are available:
+**Status: In Development**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Setup (once backend is running)
 
-## React Compiler
-
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd frontend
+nvm use 20
+npm install
+cp .env.example .env     # set VITE_API_URL=http://localhost:3000
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+App: http://localhost:5173
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Folder Structure
+
 ```
+src/
+├── modules/           ← One folder per backend module (1:1 match)
+│   ├── auth/
+│   ├── inventory/
+│   ├── sales/
+│   ├── purchases/
+│   ├── finance/
+│   ├── crm/
+│   └── returns/
+├── shared/
+│   ├── components/    ← Reusable: DataTable, StatusBadge, Modal, PageHeader
+│   ├── ui/            ← shadcn/ui base components
+│   ├── utils/         ← formatCurrency, formatDate, etc.
+│   └── constants/     ← queryKeys.ts, routes.ts
+├── hooks/             ← useAuth, useDebounce, usePagination
+├── lib/               ← axios.ts, queryClient.ts, store.ts (Zustand)
+├── routes/            ← AppRouter.tsx, ProtectedRoute.tsx
+└── types/             ← TypeScript interfaces mirroring backend DTOs
+```
+
+---

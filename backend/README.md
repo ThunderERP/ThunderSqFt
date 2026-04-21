@@ -1,98 +1,219 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# ThunderERP — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+> **Enterprise Resource Planning system** built with NestJS · TypeScript · PostgreSQL · Prisma
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+[![PR Checks](https://github.com/ThunderERP/ThunderERP/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/ThunderERP/ThunderERP/actions/workflows/pr-checks.yml)
+[![Node](https://img.shields.io/badge/node-20.x-brightgreen)](https://nodejs.org)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Modules
 
-## Project setup
+| Module | Endpoints | Description |
+|---|---|---|
+| **Auth** | `POST /auth/login` · `POST /auth/register` · `GET /auth/profile` | JWT authentication, 9 roles |
+| **Users** | `GET/PATCH /users` | User management (Developer Admin only) |
+| **Customers** | `GET/POST/PATCH/DELETE /customers` | Customer records with order history |
+| **Suppliers** | `GET/POST/PATCH/DELETE /suppliers` | Supplier management |
+| **Products** | `GET/POST/PATCH/DELETE /products` | Product master data, auto-creates inventory |
+| **Inventory** | `GET /inventory` · `PATCH /inventory/product/:id/adjust` | Stock levels, movements, low-stock alerts |
+| **Orders** | `POST /orders` · `PATCH /orders/:id/confirm\|ship\|deliver\|complete\|cancel` | Full atomic order lifecycle with SELECT FOR UPDATE |
+| **Invoices** | `GET /invoices` · `PATCH /invoices/:id` | Auto-generated on order confirm, PAID invoices locked |
+| **Payments** | `POST /payments` · `GET /payments` | Payment recording, PARTIAL/PAID status, ledger entry |
+| **Purchases** | `POST /purchases` · `PATCH /purchases/:id/approve\|receive\|complete` | Procurement with Business Owner approval gate |
+| **Returns** | `POST /returns` · `PATCH /returns/:id/process` | REFUND / RETURN / REPLACEMENT state machine |
+| **CRM** | `POST/GET/PATCH /crm/leads` · `POST/GET/PATCH /crm/complaints` | Lead pipeline, convert to customer, complaints |
+| **Finance** | `GET /finance/dashboard\|accounts-receivable\|accounts-payable\|cash-flow\|sales-report` | Reporting engine |
+| **Audit** | `GET /audit` · `GET /audit/:type/:id` | Non-volatile audit log (SRS §2.3) |
+| **Health** | `GET /health` | Liveness probe for Docker / CI smoke tests |
 
-```bash
-$ npm install
-```
+---
 
-## Compile and run the project
+## Quick Start
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
+### Option A — Docker (recommended)
 
 ```bash
-# unit tests
-$ npm run test
+git clone https://github.com/ThunderERP/ThunderERP.git
+cd ThunderERP
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env          # Edit with your values
+docker compose up -d          # Starts PostgreSQL + NestJS backend
+docker compose exec backend npx prisma migrate dev --name init
+docker compose exec backend npm run db:seed
 ```
 
-## Deployment
+API: http://localhost:3000/api  
+Swagger docs: http://localhost:3000/api/docs
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Option B — Local (manual)
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Prerequisites: Node 20, PostgreSQL 16 running locally
+
+git clone https://github.com/ThunderERP/ThunderERP.git
+cd ThunderERP
+
+nvm use                        # Switches to Node 20 via .nvmrc
+npm install
+cp .env.example .env           # Edit DATABASE_URL and JWT_SECRET
+
+npx prisma migrate dev --name init
+npx prisma generate
+npm run db:seed
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## Environment Variables
 
-Check out a few resources that may come in handy when working with NestJS:
+Copy `.env.example` to `.env` and fill in:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+| Variable | Description | Example |
+|---|---|---|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/thunder_erp` |
+| `JWT_SECRET` | Secret for signing JWTs — use a long random string | `openssl rand -hex 64` |
+| `JWT_EXPIRES_IN` | JWT lifetime | `24h` |
+| `PORT` | Port the API listens on | `3000` |
+| `NODE_ENV` | Environment | `development` / `production` |
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Seed Accounts
 
-## Stay in touch
+After running `npm run db:seed`, all accounts use password **`Thunder@123`**:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+| Email | Role |
+|---|---|
+| `admin@thundererp.com` | DEVELOPER_ADMIN |
+| `owner@thundererp.com` | BUSINESS_OWNER |
+| `salesmgr@thundererp.com` | SALES_MANAGER |
+| `salesstaff@thundererp.com` | SALES_STAFF |
+| `inventory@thundererp.com` | INVENTORY_MANAGER |
+| `finance@thundererp.com` | FINANCE_MANAGER |
+| `accountant@thundererp.com` | ACCOUNTANT |
+| `crm@thundererp.com` | CRM_SUPPORT |
+| `refund@thundererp.com` | REFUND_HANDLER |
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## NPM Scripts
+
+```bash
+npm run start:dev       # Start with hot reload (development)
+npm run build           # Compile TypeScript → dist/
+npm run start:prod      # Run compiled production build
+npm run lint            # ESLint check
+npm test                # Jest unit tests
+npm run test:cov        # Coverage report
+npm run db:migrate      # Create + apply Prisma migration (dev)
+npm run db:deploy       # Apply pending migrations (production)
+npm run db:seed         # Seed database with all 9 roles + sample data
+npm run db:studio       # Open Prisma Studio in browser
+npm run db:reset        # ⚠️  Drop all data + re-migrate + seed (dev only)
+```
+
+---
+
+## Architecture
+
+```
+Access Layer      →  API Gateway / JWT Auth
+                      ↓
+Logic Tier        →  Sales · Procurement · CRM · Inventory · Finance
+                      ↓
+Persistence Tier  →  Prisma ORM → PostgreSQL 16
+                                   ↘
+                              System Audit Log (non-volatile)
+```
+
+### Order Lifecycle (Atomic — matches SRS Sequence Diagram)
+
+```
+PENDING → CONFIRMED → SHIPPED → DELIVERED → COMPLETED
+              ↓           ↓
+          CANCELLED   CANCELLED          → RETURNED
+```
+
+On `CONFIRM`: `SELECT FOR UPDATE` locks each inventory row → validates stock →
+moves `available_qty → reserved_qty` → creates Invoice. All in one transaction.
+If any item is out of stock, the entire transaction rolls back.
+
+On `DELIVER`: deducts from `reserved_qty` (physical outward movement).
+
+On `CANCEL` (from CONFIRMED): releases `reserved_qty` back to `available_qty`.
+
+---
+
+## Git Workflow
+
+See [`docs/git-workflow.md`](docs/git-workflow.md) for the complete team workflow.
+
+Short version:
+1. `git checkout dev && git pull origin dev`
+2. `git checkout -b feature/<module>-<description>`
+3. Commit using [Conventional Commits](https://www.conventionalcommits.org/)
+4. `git push origin feature/...`
+5. Open PR → target `dev` → CI must pass before review
+6. Tech Lead merges `dev → main` → triggers production deploy
+
+**Direct pushes to `dev` and `main` are blocked.**
+
+---
+
+## Project Structure
+
+```
+src/
+├── main.ts                    # Bootstrap, Swagger, ValidationPipe
+├── app.module.ts              # Root module
+├── prisma/                    # PrismaService (global)
+├── common/                    # Guards, decorators, filters, interceptors, pagination
+└── modules/
+    ├── auth/                  # JWT + Passport
+    ├── users/
+    ├── customers/
+    ├── suppliers/
+    ├── products/
+    ├── inventory/             # atomicReserve, atomicRelease, atomicDeduct, atomicAdd
+    ├── orders/                # Full atomic order flow
+    ├── invoices/
+    ├── payments/              # Ledger entries
+    ├── purchases/             # Business Owner approval gate
+    ├── returns/               # REFUND / RETURN / REPLACEMENT
+    ├── crm/                   # Leads + complaints
+    ├── finance/               # Reporting engine
+    ├── audit/                 # Non-volatile audit log
+    └── health/                # /api/health liveness probe
+prisma/
+    ├── schema.prisma          # All 16 models, all enums, all FK relationships
+    └── seed.ts                # All 9 roles + sample data
+```
+
+---
+
+## API Documentation
+
+Swagger UI is available at **http://localhost:3000/api/docs** when the server is running.
+
+All endpoints require a Bearer JWT except `POST /api/v1/auth/login` and `GET /api/v1/health`.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js 20 (LTS) |
+| Framework | NestJS 10 |
+| Language | TypeScript 5 (strict mode) |
+| ORM | Prisma 5 |
+| Database | PostgreSQL 16 |
+| Auth | JWT + Passport |
+| Validation | class-validator + class-transformer |
+| Documentation | Swagger / OpenAPI |
+| Testing | Jest + ts-jest |
+| Containerisation | Docker + Docker Compose |
+| CI/CD | GitHub Actions |

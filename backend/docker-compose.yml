@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: thunder-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: thunder_dev_pass
+      POSTGRES_DB: thunder_erp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d thunder_erp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: thunder-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://admin:thunder_dev_pass@postgres:5432/thunder_erp
+      JWT_SECRET: thunder_jwt_secret_change_in_prod
+      JWT_EXPIRES_IN: 24h
+      PORT: 3000
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src        # Hot reload — mounts src directory
+      - ./prisma:/app/prisma
+    command: npm run start:dev
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -1,120 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import FinanceLayout from './layouts/FinanceLayout'
+
+// Lazy-loaded page components
+const Dashboard = lazy(() => import('./modules/finance/pages/dashboard'))
+const Salary = lazy(() => import('./modules/finance/pages/salary'))
+const Receivables = lazy(() => import('./modules/finance/pages/receivables'))
+const Payables = lazy(() => import('./modules/finance/pages/payables'))
+const Cashflow = lazy(() => import('./modules/finance/pages/cashflow'))
+const FinancialReports = lazy(() => import('./modules/finance/pages/financial-reports'))
+const Invoices = lazy(() => import('./modules/finance/pages/invoices'))
+const Expenses = lazy(() => import('./modules/finance/pages/expenses'))
+const Accounts = lazy(() => import('./modules/finance/pages/accounts'))
+const Reports = lazy(() => import('./modules/finance/pages/reports'))
+
+function PageLoader() {
+  return (
+    <div className="w-full h-full animate-pulse">
+      {/* Header Skeleton */}
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <div className="h-8 bg-gray-200 rounded w-64 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-48"></div>
+        </div>
+      </div>
+      
+      {/* Stats Cards Skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="h-28 bg-gray-100 rounded-2xl border border-gray-100 neu-card"></div>
+        ))}
+      </div>
+      
+      {/* Content Area Skeleton */}
+      <div className="h-[400px] bg-gray-100 rounded-2xl border border-gray-100 neu-card"></div>
+    </div>
+  )
+}
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<FinanceLayout />}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+          <Route path="salary" element={<Suspense fallback={<PageLoader />}><Salary /></Suspense>} />
+          <Route path="receivables" element={<Suspense fallback={<PageLoader />}><Receivables /></Suspense>} />
+          <Route path="payables" element={<Suspense fallback={<PageLoader />}><Payables /></Suspense>} />
+          <Route path="cashflow" element={<Suspense fallback={<PageLoader />}><Cashflow /></Suspense>} />
+          <Route path="financial-reports" element={<Suspense fallback={<PageLoader />}><FinancialReports /></Suspense>} />
+          <Route path="invoices" element={<Suspense fallback={<PageLoader />}><Invoices /></Suspense>} />
+          <Route path="expenses" element={<Suspense fallback={<PageLoader />}><Expenses /></Suspense>} />
+          <Route path="accounts" element={<Suspense fallback={<PageLoader />}><Accounts /></Suspense>} />
+          <Route path="reports" element={<Suspense fallback={<PageLoader />}><Reports /></Suspense>} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 

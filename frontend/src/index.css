@@ -1,1 +1,168 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties (Light — from UI Design Standards) ── */
+:root {
+  /* Primary */
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-primary-light: #EFF6FF;
+
+  /* Neutrals */
+  --bg-body: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #FFFFFF;
+  --text-primary: #1E293B;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+  --border-color: #E2E8F0;
+
+  /* Shadows (neumorphism light) */
+  --border-subtle: #E2E8F0;
+  --shadow-light: rgba(255, 255, 255, 0.9);
+  --shadow-dark: rgba(0, 0, 0, 0.06);
+  --shadow-light-strong: rgba(255, 255, 255, 0.95);
+  --shadow-dark-strong: rgba(0, 0, 0, 0.09);
+  --inset-light: rgba(255, 255, 255, 0.8);
+  --inset-dark: rgba(0, 0, 0, 0.05);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --table-hover: rgba(248, 250, 252, 0.5);
+  --border-row: #E2E8F0;
+  --chart-grid: #E2E8F0;
+
+  /* Status */
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ─── Scrollbar Styling ────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ─── Smooth transitions globally ──────────────────── */
+a, button { transition: all 0.2s ease; }
+
+/* ─── Scroll Progress Bar (Right Side) ─────────────── */
+.scroll-progress-track {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100vh;
+  background: transparent;
+  z-index: 50;
+}
+.scroll-progress-bar {
+  width: 100%;
+  background: linear-gradient(180deg, #2563EB, #7C3AED, #EC4899);
+  border-radius: 0 0 2px 2px;
+  transition: height 0.1s linear;
+}
+
+/* ─── Neumorphism Cards ────────────────────────────── */
+.neu-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  box-shadow:
+    6px 6px 14px var(--shadow-dark),
+   -6px -6px 14px var(--shadow-light);
+  transition: transform 0.25s cubic-bezier(.22,1,.36,1), box-shadow 0.25s ease, background-color 0.3s ease;
+}
+.neu-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    8px 8px 20px var(--shadow-dark-strong),
+   -8px -8px 20px var(--shadow-light-strong);
+}
+
+.neu-inset {
+  background: var(--bg-card);
+  border-radius: 16px;
+  box-shadow:
+    inset 3px 3px 6px var(--inset-dark),
+    inset -3px -3px 6px var(--inset-light);
+  border: 1px solid var(--border-subtle);
+  transition: background-color 0.3s ease;
+}
+
+.neu-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow:
+    4px 4px 12px var(--shadow-dark),
+   -4px -4px 12px var(--shadow-light);
+  transition: background-color 0.3s ease;
+}
+
+/* ─── Bento Grid System ────────────────────────────── */
+.bento-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 1024px) { .bento-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .bento-grid { grid-template-columns: 1fr; } }
+.bento-span-1 { grid-column: span 1; }
+.bento-span-2 { grid-column: span 2; }
+.bento-span-3 { grid-column: span 3; }
+.bento-span-4 { grid-column: span 4; }
+.bento-row-2 { grid-row: span 2; }
+@media (max-width: 1024px) { .bento-span-3, .bento-span-4 { grid-column: span 2; } }
+@media (max-width: 640px) { .bento-span-2, .bento-span-3, .bento-span-4 { grid-column: span 1; } }
+
+.card-hover {
+  transition: transform 0.25s cubic-bezier(.22,1,.36,1), box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    8px 8px 20px var(--shadow-dark-strong),
+   -8px -8px 20px var(--shadow-light-strong);
+}
+
+/* ─── Global overrides (Fixing camouflaged colors) ── */
+.text-gray-300 { color: #94A3B8 !important; }
+.text-gray-400 { color: #64748B !important; }
+.text-gray-500 { color: #475569 !important; }
+.text-gray-600 { color: #334155 !important; }
+
+.border-gray-50 { border-color: #E2E8F0 !important; }
+.border-gray-100 { border-color: #CBD5E1 !important; }
+.border-gray-200 { border-color: #94A3B8 !important; }
+
+.bg-gray-50 { background-color: #F8FAFC !important; }
+.bg-gray-100 { background-color: #F1F5F9 !important; }
+
+/* ─── Fade-in animations ───────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in          { animation: fadeIn 0.4s ease-out forwards; }
+.animate-fade-in-delay-1  { animation: fadeIn 0.4s ease-out 0.1s forwards; opacity: 0; }
+.animate-fade-in-delay-2  { animation: fadeIn 0.4s ease-out 0.2s forwards; opacity: 0; }
+.animate-fade-in-delay-3  { animation: fadeIn 0.4s ease-out 0.3s forwards; opacity: 0; }
+.animate-fade-in-delay-4  { animation: fadeIn 0.4s ease-out 0.4s forwards; opacity: 0; }

@@ -1,0 +1,33 @@
+# ThunderERP CODEOWNERS
+# Each line: pattern → GitHub usernames auto-assigned as reviewers
+
+# Tech Lead reviews everything
+*                                    @thundererp/tech-leads
+
+# Finance module — Finance Manager lead + Tech Lead
+src/modules/finance/                 @thundererp/finance-leads @thundererp/tech-leads
+src/modules/invoices/                @thundererp/finance-leads @thundererp/tech-leads
+src/modules/payments/                @thundererp/finance-leads @thundererp/tech-leads
+
+# Inventory module — Inventory Manager lead
+src/modules/inventory/               @thundererp/inventory-leads @thundererp/tech-leads
+src/modules/products/                @thundererp/inventory-leads @thundererp/tech-leads
+
+# Auth — security-critical, Tech Lead always reviews
+src/modules/auth/                    @thundererp/tech-leads
+src/common/guards/                   @thundererp/tech-leads
+
+# Procurement
+src/modules/purchases/               @thundererp/inventory-leads @thundererp/tech-leads
+
+# CRM and Returns
+src/modules/crm/                     @thundererp/crm-leads @thundererp/tech-leads
+src/modules/returns/                 @thundererp/crm-leads @thundererp/finance-leads
+
+# Database — any schema change requires Tech Lead + a senior dev review
+prisma/                              @thundererp/tech-leads
+
+# CI/CD — DevOps lead reviews all workflow changes
+.github/                             @thundererp/tech-leads
+Dockerfile                           @thundererp/tech-leads
+docker-compose*.yml                  @thundererp/tech-leads
