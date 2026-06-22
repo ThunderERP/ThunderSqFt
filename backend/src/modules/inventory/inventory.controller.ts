@@ -1,14 +1,7 @@
 // src/modules/inventory/inventory.controller.ts
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
+  Controller, Get, Post, Patch, Body, Param,
+  Query, ParseIntPipe, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { InventoryService } from './inventory.service';
@@ -30,16 +23,12 @@ export class InventoryController {
 
   @Get()
   @ApiOperation({ summary: 'List all inventory records with product details' })
-  findAll(@Query() dto: PaginationDto) {
-    return this.svc.findAll(dto);
-  }
+  findAll(@Query() dto: PaginationDto) { return this.svc.findAll(dto); }
 
   @Get('low-stock')
   @Roles(Role.INVENTORY_MANAGER, Role.BUSINESS_OWNER, Role.DEVELOPER_ADMIN)
   @ApiOperation({ summary: 'Products at or below reorder level' })
-  getLowStock() {
-    return this.svc.getLowStockRaw();
-  }
+  getLowStock() { return this.svc.getLowStockRaw(); }
 
   @Get('product/:productId')
   @ApiOperation({ summary: 'Get inventory for a specific product' })
@@ -49,7 +38,10 @@ export class InventoryController {
 
   @Get('product/:productId/movements')
   @ApiOperation({ summary: 'Stock movement history for a product' })
-  getMovements(@Param('productId', ParseIntPipe) productId: number, @Query() dto: PaginationDto) {
+  getMovements(
+    @Param('productId', ParseIntPipe) productId: number,
+    @Query() dto: PaginationDto,
+  ) {
     return this.svc.getMovements(productId, dto);
   }
 

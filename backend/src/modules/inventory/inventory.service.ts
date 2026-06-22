@@ -110,8 +110,7 @@ export class InventoryService {
         WHERE product_id = ${productId}
         FOR UPDATE
       `;
-      if (!rows.length)
-        throw new NotFoundException(`Inventory for product #${productId} not found`);
+      if (!rows.length) throw new NotFoundException(`Inventory for product #${productId} not found`);
 
       const current = rows[0].available_qty;
       const newQty = current + dto.quantity;
@@ -158,7 +157,9 @@ export class InventoryService {
     dto: ReserveStockDto,
   ): Promise<void> {
     // Step 5: SELECT FOR UPDATE — lock the inventory row
-    const rows = await tx.$queryRaw<{ available_qty: number; reserved_qty: number }[]>`
+    const rows = await tx.$queryRaw<
+      { available_qty: number; reserved_qty: number }[]
+    >`
       SELECT available_qty, reserved_qty
       FROM inventory
       WHERE product_id = ${dto.productId}

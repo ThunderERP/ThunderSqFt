@@ -39,9 +39,7 @@ describe('AuthService', () => {
 
     it('throws UnauthorizedException for inactive user', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({
-        id: 1,
-        isActive: false,
-        passwordHash: 'hash',
+        id: 1, isActive: false, passwordHash: 'hash',
       });
       await expect(service.validateUser('x@x.com', 'pass')).rejects.toThrow(UnauthorizedException);
     });
@@ -49,20 +47,14 @@ describe('AuthService', () => {
     it('throws UnauthorizedException for wrong password', async () => {
       const hash = await bcrypt.hash('correctpassword', 12);
       mockPrisma.user.findUnique.mockResolvedValue({ id: 1, isActive: true, passwordHash: hash });
-      await expect(service.validateUser('x@x.com', 'wrongpassword')).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.validateUser('x@x.com', 'wrongpassword')).rejects.toThrow(UnauthorizedException);
     });
 
     it('returns user without passwordHash on success', async () => {
       const hash = await bcrypt.hash('mypassword', 12);
       mockPrisma.user.findUnique.mockResolvedValue({
-        id: 1,
-        name: 'Dev',
-        email: 'dev@x.com',
-        role: Role.DEVELOPER_ADMIN,
-        isActive: true,
-        passwordHash: hash,
+        id: 1, name: 'Dev', email: 'dev@x.com', role: Role.DEVELOPER_ADMIN,
+        isActive: true, passwordHash: hash,
       });
       const result = await service.validateUser('dev@x.com', 'mypassword');
       expect(result).not.toHaveProperty('passwordHash');
@@ -82,29 +74,17 @@ describe('AuthService', () => {
     it('throws ConflictException if email already exists', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({ id: 1 });
       await expect(
-        service.register({
-          name: 'X',
-          email: 'x@x.com',
-          password: 'pass1234',
-          role: Role.SALES_STAFF,
-        }),
+        service.register({ name: 'X', email: 'x@x.com', password: 'pass1234', role: Role.SALES_STAFF }),
       ).rejects.toThrow(ConflictException);
     });
 
     it('creates user with hashed password', async () => {
       mockPrisma.user.findUnique.mockResolvedValue(null);
       mockPrisma.user.create.mockResolvedValue({
-        id: 2,
-        name: 'New',
-        email: 'new@x.com',
-        role: Role.SALES_STAFF,
-        createdAt: new Date(),
+        id: 2, name: 'New', email: 'new@x.com', role: Role.SALES_STAFF, createdAt: new Date(),
       });
       const result = await service.register({
-        name: 'New',
-        email: 'new@x.com',
-        password: 'securePass1',
-        role: Role.SALES_STAFF,
+        name: 'New', email: 'new@x.com', password: 'securePass1', role: Role.SALES_STAFF,
       });
       expect(mockPrisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({

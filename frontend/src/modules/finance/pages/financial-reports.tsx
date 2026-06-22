@@ -12,7 +12,7 @@ import {
   Legend,
   Filler,
 } from 'chart.js'
-import { Printer, Download, TrendingUp, DollarSign, PieChart, Activity, ChevronRight, FileText } from 'lucide-react'
+import { Printer, Download, TrendingUp, PieChart, Activity, ChevronRight, FileText } from 'lucide-react'
 import { useState } from 'react'
 import PageHeader from '../components/PageHeader'
 import StatCard from '../components/StatCard'
@@ -60,6 +60,77 @@ const plData = [
 
 export default function FinancialReports() {
   const [activeTab, setActiveTab] = useState('overview')
+  const [dateRange, setDateRange] = useState('Year to Date')
+  const [startDate, setStartDate] = useState('2024-01-01')
+  const [endDate, setEndDate] = useState('2024-06-30')
+
+  const getKPIValues = () => {
+    if (dateRange === 'Last Quarter') {
+      return {
+        revenue: '₹142,000',
+        expenses: '₹68,000',
+        netProfit: '₹74,000',
+        margin: '52.1% profit margin',
+        assets: '₹712,000',
+        revenueTrend: [43000, 48000, 51000],
+        revenueLabels: ['Oct', 'Nov', 'Dec'],
+        expenseData: [40, 25, 15, 12, 8]
+      }
+    }
+    if (dateRange === 'Last Month') {
+      return {
+        revenue: '₹48,000',
+        expenses: '₹22,500',
+        netProfit: '₹25,500',
+        margin: '53.1% profit margin',
+        assets: '₹705,000',
+        revenueTrend: [12000, 15000, 11000, 10000],
+        revenueLabels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        expenseData: [45, 20, 15, 12, 8]
+      }
+    }
+    if (dateRange === 'Custom Range') {
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      let days = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+      if (isNaN(days) || days < 0) days = 30 // fallback
+      
+      const rev = 1500 * days
+      const exp = 700 * days
+      const net = rev - exp
+      const marginVal = rev > 0 ? ((net / rev) * 100).toFixed(1) : '0.0'
+      const assetVal = 700000 + (days * 100)
+
+      // Generate dates/weeks for trend line based on days selected
+      const steps = Math.min(Math.max(Math.round(days / 7), 3), 10)
+      const customTrend = Array.from({ length: steps }, (_, i) => Math.round((rev / steps) * (0.8 + Math.sin(i) * 0.2)))
+      const customLabels = Array.from({ length: steps }, (_, i) => `Point ${i + 1}`)
+
+      return {
+        revenue: `₹${rev.toLocaleString()}`,
+        expenses: `₹${exp.toLocaleString()}`,
+        netProfit: `₹${net.toLocaleString()}`,
+        margin: `${marginVal}% profit margin`,
+        assets: `₹${assetVal.toLocaleString()}`,
+        revenueTrend: customTrend,
+        revenueLabels: customLabels,
+        expenseData: [48, 22, 14, 11, 5]
+      }
+    }
+    // Default Year to Date
+    return {
+      revenue: '₹328,000',
+      expenses: '₹150,000',
+      netProfit: '₹90,368',
+      margin: '27.5% profit margin',
+      assets: '₹735,000',
+      revenueTrend: [48000, 52000, 55000, 61000, 58000, 72000],
+      revenueLabels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      expenseData: [50, 20, 15, 10, 5]
+    }
+  }
+
+  const kpis = getKPIValues()
 
   const handlePrint = () => {
     window.print()
@@ -68,32 +139,34 @@ export default function FinancialReports() {
   const handleExportPDF = () => {
     const doc = new jsPDF()
 
-    // Header
     doc.setFontSize(20)
     doc.text('Financial Report Summary', 14, 22)
     doc.setFontSize(11)
     doc.setTextColor(100)
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30)
+    doc.text(`Generated on: ${new Date().toLocaleDateString()} | Date Range: ${dateRange}`, 14, 30)
 
-    // KPI Section
     doc.setFontSize(14)
     doc.setTextColor(0)
     doc.text('Financial Overview KPIs', 14, 45)
+
+    const cleanRevenue = kpis.revenue.replace(/₹/g, 'Rs. ')
+    const cleanExpenses = kpis.expenses.replace(/₹/g, 'Rs. ')
+    const cleanProfit = kpis.netProfit.replace(/₹/g, 'Rs. ')
+    const cleanAssets = kpis.assets.replace(/₹/g, 'Rs. ')
 
     autoTable(doc, {
       startY: 50,
       head: [['Metric', 'Value', 'Trend/Status']],
       body: [
-        ['Total Revenue', 'Rs. 328,000', '+15.3%'],
-        ['Total Expenses', 'Rs. 150,000', '+8.2%'],
-        ['Net Profit', 'Rs. 90,368', '27.5% Margin'],
-        ['Total Assets', 'Rs. 735,000', 'Healthy'],
+        ['Total Revenue', cleanRevenue, '+15.3%'],
+        ['Total Expenses', cleanExpenses, '+8.2%'],
+        ['Net Profit', cleanProfit, kpis.margin],
+        ['Total Assets', cleanAssets, 'Healthy'],
       ],
       theme: 'grid',
       headStyles: { fillColor: [37, 99, 235] },
     })
 
-    // Ratios Section
     doc.setFontSize(14)
     doc.text('Key Financial Ratios', 14, (doc as any).lastAutoTable.finalY + 15)
 
@@ -137,7 +210,6 @@ export default function FinancialReports() {
           }
         />
 
-        {/* Tabs Selection */}
         <div className="flex items-center gap-1 bg-gray-100/50 p-1 rounded-2xl w-fit max-w-full overflow-x-auto whitespace-nowrap mb-8 border border-gray-200/50">
           <button
             onClick={() => setActiveTab('overview')}
@@ -171,15 +243,18 @@ export default function FinancialReports() {
 
         {activeTab === 'overview' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Filters Row */}
             <div className="neu-card p-6 flex flex-wrap items-center gap-6">
               <div className="flex-1 min-w-[200px]">
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Date Range</label>
-                <select className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 bg-gray-50/50 focus:ring-2 focus:ring-primary-500 transition-all outline-none">
-                  <option>Year to Date</option>
-                  <option>Last Quarter</option>
-                  <option>Last Month</option>
-                  <option>Custom Range</option>
+                <select
+                  value={dateRange}
+                  onChange={(e) => setDateRange(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 bg-gray-50/50 focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                >
+                  <option value="Year to Date">Year to Date</option>
+                  <option value="Last Quarter">Last Quarter</option>
+                  <option value="Last Month">Last Month</option>
+                  <option value="Custom Range">Custom Range</option>
                 </select>
               </div>
               <div className="flex-1 min-w-[200px]">
@@ -191,25 +266,37 @@ export default function FinancialReports() {
                   <option>Profit & Loss</option>
                 </select>
               </div>
-              <div className="flex-1 min-w-[200px]">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Start Date</label>
-                <input
-                  type="date"
-                  defaultValue="2024-01-01"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 bg-gray-50/50 focus:ring-2 focus:ring-primary-500 transition-all outline-none"
-                />
-              </div>
+              {dateRange === 'Custom Range' && (
+                <>
+                  <div className="flex-1 min-w-[200px] animate-in fade-in slide-in-from-left-4 duration-300">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Start Date</label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 bg-gray-50/50 focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[200px] animate-in fade-in slide-in-from-left-4 duration-300">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">End Date</label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 bg-gray-50/50 focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* KPI Cards Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard label="Total Revenue" value="₹328,000" subtitle="↗ +15.3% vs last period" valueColor="text-gray-900" delay={0} />
-              <StatCard label="Total Expenses" value="₹150,000" subtitle="↗ +8.2% vs last period" valueColor="text-gray-900" delay={1} />
-              <StatCard label="Net Profit" value="₹90,368" subtitle="27.5% profit margin" valueColor="text-emerald-600" delay={2} />
-              <StatCard label="Total Assets" value="₹735,000" subtitle="Current financial position" valueColor="text-gray-900" delay={3} />
+              <StatCard label="Total Revenue" value={kpis.revenue} subtitle="↗ +15.3% vs last period" valueColor="text-gray-900" delay={0} />
+              <StatCard label="Total Expenses" value={kpis.expenses} subtitle="↗ +8.2% vs last period" valueColor="text-gray-900" delay={1} />
+              <StatCard label="Net Profit" value={kpis.netProfit} subtitle={kpis.margin} valueColor="text-emerald-600" delay={2} />
+              <StatCard label="Total Assets" value={kpis.assets} subtitle="Current financial position" valueColor="text-gray-900" delay={3} />
             </div>
 
-            {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
                 <h2 className="text-lg font-bold text-gray-900">Expense Distribution</h2>
@@ -219,7 +306,7 @@ export default function FinancialReports() {
                     data={{
                       labels: ['Salaries', 'Operations', 'Marketing', 'Technology', 'Others'],
                       datasets: [{
-                        data: [50, 20, 15, 10, 5],
+                        data: kpis.expenseData,
                         backgroundColor: ['#4F7DF3', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'],
                         borderWidth: 0,
                       }],
@@ -240,11 +327,11 @@ export default function FinancialReports() {
                 <div className="h-[300px]">
                   <Line
                     data={{
-                      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                      labels: kpis.revenueLabels,
                       datasets: [
                         {
                           label: 'Revenue',
-                          data: [48000, 52000, 55000, 61000, 58000, 72000],
+                          data: kpis.revenueTrend,
                           borderColor: '#4F7DF3',
                           backgroundColor: 'rgba(79, 125, 243, 0.05)',
                           fill: true,
@@ -274,7 +361,6 @@ export default function FinancialReports() {
 
         {activeTab === 'p&l' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* P&L Summary Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
                 <div className="flex items-center justify-between mb-8">
@@ -426,11 +512,11 @@ export default function FinancialReports() {
                 <div className="mt-12 space-y-4">
                   <div className="flex items-center justify-between p-4 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/10">
                     <span className="text-sm font-medium">Retained Earnings</span>
-                    <span className="font-bold">$184,200</span>
+                    <span className="font-bold">₹184,200</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/10">
                     <span className="text-sm font-medium">Common Stock</span>
-                    <span className="font-bold">$338,920</span>
+                    <span className="font-bold">₹338,920</span>
                   </div>
                 </div>
               </div>

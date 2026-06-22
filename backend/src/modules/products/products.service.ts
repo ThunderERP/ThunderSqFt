@@ -1,5 +1,8 @@
 // src/modules/products/products.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { PaginationDto, paginate } from '../../common/dto/pagination.dto';

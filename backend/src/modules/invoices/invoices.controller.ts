@@ -1,13 +1,6 @@
 // src/modules/invoices/invoices.controller.ts
 import {
-  Controller,
-  Get,
-  Patch,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
+  Controller, Get, Patch, Body, Param, Query, ParseIntPipe, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
@@ -34,9 +27,7 @@ export class InvoicesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get invoice with full order and payment details' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.svc.findOne(id);
-  }
+  findOne(@Param('id', ParseIntPipe) id: number) { return this.svc.findOne(id); }
 
   @Get('by-order/:orderId')
   @ApiOperation({ summary: 'Get invoice for a specific order' })

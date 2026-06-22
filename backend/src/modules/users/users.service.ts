@@ -1,18 +1,14 @@
 // src/modules/users/users.service.ts
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable, NotFoundException, ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto, paginate } from '../../common/dto/pagination.dto';
 import * as bcrypt from 'bcrypt';
 
 const SELECT = {
-  id: true,
-  name: true,
-  email: true,
-  role: true,
-  isActive: true,
-  createdAt: true,
-  updatedAt: true,
+  id: true, name: true, email: true, role: true, isActive: true, createdAt: true, updatedAt: true,
 };
 
 @Injectable()
@@ -23,12 +19,7 @@ export class UsersService {
     const { page = 1, limit = 20 } = dto;
     const skip = (page - 1) * limit;
     const [users, total] = await this.prisma.$transaction([
-      this.prisma.user.findMany({
-        skip,
-        take: limit,
-        select: SELECT,
-        orderBy: { createdAt: 'desc' },
-      }),
+      this.prisma.user.findMany({ skip, take: limit, select: SELECT, orderBy: { createdAt: 'desc' } }),
       this.prisma.user.count(),
     ]);
     return paginate(users, total, page, limit);

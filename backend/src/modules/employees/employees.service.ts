@@ -36,12 +36,6 @@ export class EmployeesService {
   async findOne(id: number) {
     const employee = await this.prisma.employee.findUnique({
       where: { id },
-      include: {
-        salaryRecords: {
-          orderBy: { paymentDate: 'desc' },
-          take: 5,
-        },
-      },
     });
 
     if (!employee || !employee.isActive) {

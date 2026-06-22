@@ -1,5 +1,7 @@
 // src/modules/finance/finance.controller.ts
-import { Controller, Get, Post, Query, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller, Get, Query, UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { FinanceService } from './finance.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -9,32 +11,31 @@ import { Role } from '@prisma/client';
 
 @ApiTags('Finance')
 @ApiBearerAuth('JWT-auth')
-// @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('finance')
 export class FinanceController {
   constructor(private svc: FinanceService) {}
 
   @Get('dashboard')
   @Roles(
-    Role.FINANCE_MANAGER,
-    Role.BUSINESS_OWNER,
-    Role.SALES_MANAGER,
-    Role.INVENTORY_MANAGER,
+    Role.FINANCE_MANAGER, Role.BUSINESS_OWNER,
+    Role.SALES_MANAGER, Role.INVENTORY_MANAGER,
     Role.DEVELOPER_ADMIN,
   )
   @ApiOperation({
     summary: 'Real-time dashboard KPIs — revenue, orders, invoices, stock, CRM',
   })
-  getDashboard() {
-    return this.svc.getDashboardSummary();
-  }
+  getDashboard() { return this.svc.getDashboardSummary(); }
 
   @Get('accounts-receivable')
   @Roles(Role.FINANCE_MANAGER, Role.ACCOUNTANT, Role.BUSINESS_OWNER, Role.DEVELOPER_ADMIN)
   @ApiOperation({ summary: 'Accounts receivable — outstanding customer invoices' })
   @ApiQuery({ name: 'fromDate', required: false, example: '2024-01-01' })
   @ApiQuery({ name: 'toDate', required: false, example: '2024-12-31' })
-  getAccountsReceivable(@Query('fromDate') fromDate?: string, @Query('toDate') toDate?: string) {
+  getAccountsReceivable(
+    @Query('fromDate') fromDate?: string,
+    @Query('toDate') toDate?: string,
+  ) {
     return this.svc.getAccountsReceivable(fromDate, toDate);
   }
 
@@ -43,7 +44,10 @@ export class FinanceController {
   @ApiOperation({ summary: 'Accounts payable — pending/approved supplier purchases' })
   @ApiQuery({ name: 'fromDate', required: false })
   @ApiQuery({ name: 'toDate', required: false })
-  getAccountsPayable(@Query('fromDate') fromDate?: string, @Query('toDate') toDate?: string) {
+  getAccountsPayable(
+    @Query('fromDate') fromDate?: string,
+    @Query('toDate') toDate?: string,
+  ) {
     return this.svc.getAccountsPayable(fromDate, toDate);
   }
 
@@ -52,12 +56,18 @@ export class FinanceController {
   @ApiOperation({ summary: 'Cash flow statement for a date range' })
   @ApiQuery({ name: 'fromDate', required: true, example: '2024-01-01' })
   @ApiQuery({ name: 'toDate', required: true, example: '2024-12-31' })
-  getCashFlow(@Query('fromDate') fromDate: string, @Query('toDate') toDate: string) {
+  getCashFlow(
+    @Query('fromDate') fromDate: string,
+    @Query('toDate') toDate: string,
+  ) {
     return this.svc.getCashFlow(fromDate, toDate);
   }
 
   @Get('sales-report')
-  @Roles(Role.FINANCE_MANAGER, Role.SALES_MANAGER, Role.BUSINESS_OWNER, Role.DEVELOPER_ADMIN)
+  @Roles(
+    Role.FINANCE_MANAGER, Role.SALES_MANAGER,
+    Role.BUSINESS_OWNER, Role.DEVELOPER_ADMIN,
+  )
   @ApiOperation({ summary: 'Sales revenue report with top products' })
   @ApiQuery({ name: 'fromDate', required: true })
   @ApiQuery({ name: 'toDate', required: true })
@@ -71,11 +81,12 @@ export class FinanceController {
   }
 
   @Get('inventory-valuation')
-  @Roles(Role.FINANCE_MANAGER, Role.INVENTORY_MANAGER, Role.BUSINESS_OWNER, Role.DEVELOPER_ADMIN)
+  @Roles(
+    Role.FINANCE_MANAGER, Role.INVENTORY_MANAGER,
+    Role.BUSINESS_OWNER, Role.DEVELOPER_ADMIN,
+  )
   @ApiOperation({ summary: 'Inventory valuation — total stock value at current prices' })
-  getInventoryValuation() {
-    return this.svc.getInventoryValuation();
-  }
+  getInventoryValuation() { return this.svc.getInventoryValuation(); }
 
   @Get('transaction-ledger')
   @Roles(Role.FINANCE_MANAGER, Role.ACCOUNTANT, Role.DEVELOPER_ADMIN)
@@ -91,12 +102,5 @@ export class FinanceController {
     @Query('limit') limit?: number,
   ) {
     return this.svc.getTransactionLedger(fromDate, toDate, Number(page ?? 1), Number(limit ?? 50));
-  }
-
-  @Post('salary/process')
-  @Roles(Role.DEVELOPER_ADMIN, Role.BUSINESS_OWNER, Role.FINANCE_MANAGER)
-  @ApiOperation({ summary: 'Process salary for all active employees' })
-  processSalary(@Request() req: any) {
-    return this.svc.processSalary(req.user?.userId || 1);
   }
 }

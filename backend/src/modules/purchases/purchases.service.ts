@@ -16,9 +16,9 @@ import { Decimal } from '@prisma/client/runtime/library';
 // SRS 5: Purchase state machine
 // Pending → Approved → Received → Completed
 const VALID_PURCHASE_TRANSITIONS: Record<PurchaseStatus, PurchaseStatus[]> = {
-  PENDING: [PurchaseStatus.APPROVED],
-  APPROVED: [PurchaseStatus.RECEIVED],
-  RECEIVED: [PurchaseStatus.COMPLETED],
+  PENDING:   [PurchaseStatus.APPROVED],
+  APPROVED:  [PurchaseStatus.RECEIVED],
+  RECEIVED:  [PurchaseStatus.COMPLETED],
   COMPLETED: [],
 };
 
@@ -72,7 +72,9 @@ export class PurchasesService {
     const purchase = await this.prisma.purchase.create({
       data: {
         supplierId: dto.supplierId,
-        expectedDeliveryDate: dto.expectedDeliveryDate ? new Date(dto.expectedDeliveryDate) : null,
+        expectedDeliveryDate: dto.expectedDeliveryDate
+          ? new Date(dto.expectedDeliveryDate)
+          : null,
         status: PurchaseStatus.PENDING,
         totalAmount: total,
         notes: dto.notes,
@@ -87,7 +89,10 @@ export class PurchasesService {
 
   // SRS 4.2: Purchases must be approved by Business Owner before goods receipt
   async approve(purchaseId: number, userId: number, userRole: Role) {
-    if (userRole !== Role.BUSINESS_OWNER && userRole !== Role.DEVELOPER_ADMIN) {
+    if (
+      userRole !== Role.BUSINESS_OWNER &&
+      userRole !== Role.DEVELOPER_ADMIN
+    ) {
       throw new ForbiddenException('Only Business Owner can approve purchases');
     }
 

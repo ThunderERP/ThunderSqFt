@@ -1,6 +1,6 @@
 import { Pie } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
-import { Plus, Wallet, CreditCard, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle, Clock, Building, Tag, DollarSign } from 'lucide-react'
+import { Plus, Wallet, CreditCard, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle, Clock, Building, Tag, IndianRupee } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
@@ -342,7 +342,7 @@ export default function Accounts() {
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Opening Balance (₹)</label>
             <div className="relative">
-              <DollarSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <IndianRupee size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 required
                 type="number"

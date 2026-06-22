@@ -1,15 +1,7 @@
 // src/modules/customers/customers.controller.ts
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
+  Controller, Get, Post, Patch, Delete, Body, Param, Query,
+  ParseIntPipe, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { CustomersService } from './customers.service';
@@ -52,7 +44,10 @@ export class CustomersController {
   @Patch(':id')
   @Roles(Role.SALES_STAFF, Role.SALES_MANAGER, Role.CRM_SUPPORT, Role.DEVELOPER_ADMIN)
   @ApiOperation({ summary: 'Update customer details' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateCustomerDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateCustomerDto,
+  ) {
     return this.customersService.update(id, dto);
   }
 

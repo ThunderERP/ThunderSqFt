@@ -18,6 +18,10 @@ import { FinanceModule } from './modules/finance/finance.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { HealthModule } from './modules/health/health.module';
 import { EmployeesModule } from './modules/employees/employees.module';
+import { TasksModule } from './modules/tasks/tasks.module';
+import { BookingsModule } from './modules/bookings/bookings.module';
+import { WebhookModule } from './modules/webhooks/webhook.module';
+import { AutomationModule } from './modules/automation/automation.module';
 
 @Module({
   imports: [
@@ -52,6 +56,11 @@ import { EmployeesModule } from './modules/employees/employees.module';
     AuditModule,
     HealthModule,
     EmployeesModule,
+    TasksModule,
+    BookingsModule,
+    WebhookModule,
+    AutomationModule,
   ],
 })
 export class AppModule {}
+

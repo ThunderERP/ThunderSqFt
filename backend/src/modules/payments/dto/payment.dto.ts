@@ -6,15 +6,11 @@ import { Type } from 'class-transformer';
 
 export class CreatePaymentDto {
   @ApiProperty({ example: 1, description: 'Invoice ID this payment is for' })
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
+  @Type(() => Number) @IsNumber() @IsPositive()
   invoiceId: number;
 
-  @ApiProperty({ example: 5000.0 })
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
+  @ApiProperty({ example: 5000.00 })
+  @Type(() => Number) @IsNumber() @IsPositive()
   amount: number;
 
   @ApiProperty({ enum: PaymentMethod })
@@ -22,12 +18,10 @@ export class CreatePaymentDto {
   paymentMethod: PaymentMethod;
 
   @ApiPropertyOptional({ example: 'UPI-TXN-12345' })
-  @IsOptional()
-  @IsString()
+  @IsOptional() @IsString()
   referenceId?: string;
 
   @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
+  @IsOptional() @IsString()
   notes?: string;
 }

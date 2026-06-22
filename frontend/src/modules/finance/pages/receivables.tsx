@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Eye, DollarSign, Calendar } from 'lucide-react'
+import { Eye, IndianRupee, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
 import PageHeader from '../components/PageHeader'
 import StatCard from '../components/StatCard'
@@ -73,7 +73,7 @@ export default function Receivables() {
               }}
               className="p-2 rounded-lg hover:bg-emerald-50 text-gray-400 hover:text-emerald-500 transition-colors"
             >
-              <DollarSign size={16} />
+              <IndianRupee size={16} />
             </button>
           )}
         </div>
@@ -123,7 +123,7 @@ export default function Receivables() {
             </div>
             <div className="flex justify-between border-b pb-4">
               <span className="text-gray-500">Amount</span>
-              <span className="font-semibold text-lg">${selectedInvoice.amount.toLocaleString()}</span>
+              <span className="font-semibold text-lg">₹{selectedInvoice.amount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between border-b pb-4">
               <span className="text-gray-500">Due Date</span>
@@ -143,7 +143,7 @@ export default function Receivables() {
           <div className="space-y-6">
             <p className="text-gray-600">
               Are you sure you want to mark invoice <span className="font-semibold text-gray-900">{selectedInvoice.invoiceId}</span> as paid?
-              This will record a payment of <span className="font-semibold text-emerald-600">${selectedInvoice.amount.toLocaleString()}</span>.
+              This will record a payment of <span className="font-semibold text-emerald-600">₹{selectedInvoice.amount.toLocaleString()}</span>.
             </p>
             <div className="flex justify-end gap-3">
               <button

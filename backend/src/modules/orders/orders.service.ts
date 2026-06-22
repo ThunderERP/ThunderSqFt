@@ -8,7 +8,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InventoryService } from '../inventory/inventory.service';
-import { CreateOrderDto, UpdateOrderStatusDto, OrderFilterDto } from './dto/order.dto';
+import {
+  CreateOrderDto,
+  UpdateOrderStatusDto,
+  OrderFilterDto,
+} from './dto/order.dto';
 import { PaginationDto, paginate } from '../../common/dto/pagination.dto';
 import { OrderStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
@@ -18,13 +22,13 @@ import { Decimal } from '@prisma/client/runtime/library';
 //                     ↘ Cancelled (from Pending or Confirmed only)
 //                                           ↘ Returned (from Delivered only)
 const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  PENDING: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
-  CONFIRMED: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
-  SHIPPED: [OrderStatus.DELIVERED],
+  PENDING:   [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+  CONFIRMED: [OrderStatus.SHIPPED,   OrderStatus.CANCELLED],
+  SHIPPED:   [OrderStatus.DELIVERED],
   DELIVERED: [OrderStatus.COMPLETED, OrderStatus.RETURNED],
   COMPLETED: [],
   CANCELLED: [],
-  RETURNED: [],
+  RETURNED:  [],
 };
 
 const ORDER_INCLUDE = {
@@ -118,7 +122,9 @@ export class OrdersService {
         });
         if (!order) throw new NotFoundException(`Order #${orderId} not found`);
         if (order.status !== OrderStatus.PENDING) {
-          throw new UnprocessableEntityException(`Cannot confirm order in status: ${order.status}`);
+          throw new UnprocessableEntityException(
+            `Cannot confirm order in status: ${order.status}`,
+          );
         }
 
         // Steps 4–10: Atomic stock reservation for each item

@@ -1,23 +1,21 @@
 // src/modules/crm/crm.service.ts
 import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  ConflictException,
+  Injectable, NotFoundException, BadRequestException, ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { WebhookService } from '../webhooks/webhook.service';
 import {
-  CreateLeadDto,
-  UpdateLeadDto,
-  ConvertLeadDto,
-  CreateComplaintDto,
-  UpdateComplaintDto,
+  CreateLeadDto, UpdateLeadDto, ConvertLeadDto,
+  CreateComplaintDto, UpdateComplaintDto,
 } from './dto/crm.dto';
 import { PaginationDto, paginate } from '../../common/dto/pagination.dto';
 
 @Injectable()
 export class CrmService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private webhookService: WebhookService,
+  ) {}
 
   // ── Leads ──────────────────────────────────────────────────────────────────
 
@@ -81,8 +79,7 @@ export class CrmService {
         // Create new customer from lead data
         if (!lead.phone) throw new BadRequestException('Lead must have a phone number to convert');
         const existing = await tx.customer.findUnique({ where: { phone: lead.phone } });
-        if (existing)
-          throw new ConflictException(`Customer with phone ${lead.phone} already exists`);
+        if (existing) throw new ConflictException(`Customer with phone ${lead.phone} already exists`);
 
         const customer = await tx.customer.create({
           data: {
@@ -170,4 +167,35 @@ export class CrmService {
     }
     return this.prisma.complaint.update({ where: { id }, data });
   }
+
+  async createFollowUp(dto: { leadId: number; date: Date; type: string; notes?: string }, userId: number) {
+    const lead = await this.prisma.lead.findUnique({
+      where: { id: dto.leadId },
+      include: { assignedEmployee: true }
+    });
+    if (!lead) throw new NotFoundException(`Lead #${dto.leadId} not found`);
+
+    const followUp = await this.prisma.followUp.create({
+      data: {
+        leadId: dto.leadId,
+        date: dto.date,
+        type: dto.type,
+        notes: dto.notes || null,
+        status: 'PENDING'
+      }
+    });
+
+    const agentWaNumber = lead.assignedEmployee?.phone || '';
+    const leadName = lead.name;
+    const followUpTime = dto.date.toISOString();
+
+    await this.webhookService.emitToZapier('FOLLOW_UP_CREATED', {
+      agentWaNumber,
+      leadName,
+      followUpTime
+    });
+
+    return followUp;
+  }
 }
+

@@ -1,24 +1,13 @@
 // src/modules/crm/crm.controller.ts
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
+  Controller, Get, Post, Patch, Delete, Body, Param,
+  Query, ParseIntPipe, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { CrmService } from './crm.service';
 import {
-  CreateLeadDto,
-  UpdateLeadDto,
-  ConvertLeadDto,
-  CreateComplaintDto,
-  UpdateComplaintDto,
+  CreateLeadDto, UpdateLeadDto, ConvertLeadDto,
+  CreateComplaintDto, UpdateComplaintDto,
 } from './dto/crm.dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -58,9 +47,7 @@ export class CrmController {
 
   @Get('leads/:id')
   @ApiOperation({ summary: 'Get lead details' })
-  findOneLead(@Param('id', ParseIntPipe) id: number) {
-    return this.svc.findOneLead(id);
-  }
+  findOneLead(@Param('id', ParseIntPipe) id: number) { return this.svc.findOneLead(id); }
 
   @Patch('leads/:id')
   @Roles(Role.CRM_SUPPORT, Role.SALES_STAFF, Role.SALES_MANAGER, Role.DEVELOPER_ADMIN)
@@ -83,9 +70,7 @@ export class CrmController {
   @Delete('leads/:id')
   @Roles(Role.CRM_SUPPORT, Role.SALES_MANAGER, Role.DEVELOPER_ADMIN)
   @ApiOperation({ summary: 'Soft-delete a lead' })
-  deleteLead(@Param('id', ParseIntPipe) id: number) {
-    return this.svc.deleteLead(id);
-  }
+  deleteLead(@Param('id', ParseIntPipe) id: number) { return this.svc.deleteLead(id); }
 
   // ── Complaints ─────────────────────────────────────────────────────────────
 
@@ -124,4 +109,20 @@ export class CrmController {
   ) {
     return this.svc.updateComplaint(id, dto, u.sub);
   }
+
+  @Post('follow-ups')
+  @Roles(Role.CRM_SUPPORT, Role.SALES_STAFF, Role.SALES_MANAGER, Role.DEVELOPER_ADMIN)
+  @ApiOperation({ summary: 'Create a new follow-up for a lead' })
+  createFollowUp(
+    @Body() dto: { leadId: number; date: string; type: string; notes?: string },
+    @CurrentUser() u: AuthenticatedUser,
+  ) {
+    return this.svc.createFollowUp({
+      leadId: dto.leadId,
+      date: new Date(dto.date),
+      type: dto.type,
+      notes: dto.notes,
+    }, u.sub);
+  }
 }
+

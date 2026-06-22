@@ -1,18 +1,14 @@
 // src/modules/orders/orders.controller.ts
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
+  Controller, Get, Post, Patch, Body, Param,
+  Query, ParseIntPipe, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
-import { CreateOrderDto, OrderFilterDto } from './dto/order.dto';
+import {
+  CreateOrderDto,
+  OrderFilterDto,
+} from './dto/order.dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -24,16 +20,12 @@ import { IsOptional, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 class CancelOrderDto {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
+  @ApiPropertyOptional() @IsOptional() @IsString()
   reason?: string;
 }
 
 class ShipOrderDto {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
+  @ApiPropertyOptional() @IsOptional() @IsString()
   address?: string;
 }
 
@@ -59,9 +51,7 @@ export class OrdersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get full order details including items and invoice' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.svc.findOne(id);
-  }
+  findOne(@Param('id', ParseIntPipe) id: number) { return this.svc.findOne(id); }
 
   @Patch(':id/confirm')
   @Roles(Role.SALES_STAFF, Role.SALES_MANAGER, Role.DEVELOPER_ADMIN)

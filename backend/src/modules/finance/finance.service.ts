@@ -49,9 +49,7 @@ export class FinanceService {
         WHERE p.is_active = true AND i.available_qty <= i.reorder_level
       `,
       // Open leads
-      this.prisma.lead.count({
-        where: { status: { in: ['NEW', 'CONTACTED', 'QUALIFIED'] }, isActive: true },
-      }),
+      this.prisma.lead.count({ where: { status: { in: ['NEW', 'CONTACTED', 'QUALIFIED'] }, isActive: true } }),
       // Open complaints
       this.prisma.complaint.count({ where: { status: { in: ['OPEN', 'IN_PROGRESS'] } } }),
       // Pending purchases awaiting approval
@@ -382,44 +380,6 @@ export class FinanceService {
         totalPages: Math.ceil(total / limit),
         hasNextPage: page * limit < total,
       },
-    };
-  }
-
-  // ── Payroll Processing ───────────────────────────────────────────────────────
-
-  async processSalary(createdBy: number) {
-    const employees = await this.prisma.employee.findMany({
-      where: { isActive: true },
-    });
-
-    if (!employees.length) {
-      throw new BadRequestException('No active employees found to process salary.');
-    }
-
-    const records = employees.map((emp) => {
-      const basic = new Decimal(emp.basicSalary);
-      const allowances = new Decimal(emp.allowances);
-      const deductions = new Decimal(emp.deductions);
-      const netSalary = basic.add(allowances).sub(deductions);
-
-      return {
-        employeeId: emp.id,
-        basicSalary: basic,
-        allowances,
-        deductions,
-        netSalary,
-        status: 'PAID',
-        createdBy,
-      };
-    });
-
-    await this.prisma.salaryRecord.createMany({
-      data: records,
-    });
-
-    return {
-      message: `Processed salary for ${records.length} employees.`,
-      processedCount: records.length,
     };
   }
 }

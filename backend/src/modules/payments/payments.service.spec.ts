@@ -2,11 +2,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PaymentsService } from './payments.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  BadRequestException,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { PaymentMethod } from '@prisma/client';
 
 const mockPrisma = {
@@ -23,7 +19,10 @@ describe('PaymentsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PaymentsService, { provide: PrismaService, useValue: mockPrisma }],
+      providers: [
+        PaymentsService,
+        { provide: PrismaService, useValue: mockPrisma },
+      ],
     }).compile();
     service = module.get<PaymentsService>(PaymentsService);
     jest.clearAllMocks();
@@ -42,14 +41,9 @@ describe('PaymentsService', () => {
 
     it('throws UnprocessableEntityException if invoice is already PAID', async () => {
       mockPrisma.$transaction.mockImplementation(async (fn: Function) => {
-        mockPrisma.$queryRaw.mockResolvedValue([
-          {
-            id: 1,
-            total_amount: '1000.00',
-            paid_amount: '1000.00',
-            status: 'PAID',
-          },
-        ]);
+        mockPrisma.$queryRaw.mockResolvedValue([{
+          id: 1, total_amount: '1000.00', paid_amount: '1000.00', status: 'PAID',
+        }]);
         return fn(mockPrisma);
       });
       await expect(service.create(dto, 1)).rejects.toThrow(UnprocessableEntityException);
@@ -57,29 +51,21 @@ describe('PaymentsService', () => {
 
     it('throws BadRequestException if amount exceeds pending balance', async () => {
       mockPrisma.$transaction.mockImplementation(async (fn: Function) => {
-        mockPrisma.$queryRaw.mockResolvedValue([
-          {
-            id: 1,
-            total_amount: '1000.00',
-            paid_amount: '600.00',
-            status: 'PARTIAL',
-          },
-        ]);
+        mockPrisma.$queryRaw.mockResolvedValue([{
+          id: 1, total_amount: '1000.00', paid_amount: '600.00', status: 'PARTIAL',
+        }]);
         return fn(mockPrisma);
       });
-      await expect(service.create({ ...dto, amount: 500 }, 1)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create({ ...dto, amount: 500 }, 1),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('sets invoice status to PARTIAL when partially paid', async () => {
       mockPrisma.$transaction.mockImplementation(async (fn: Function) => {
-        mockPrisma.$queryRaw.mockResolvedValue([
-          {
-            id: 1,
-            total_amount: '1000.00',
-            paid_amount: '0.00',
-            status: 'PENDING',
-          },
-        ]);
+        mockPrisma.$queryRaw.mockResolvedValue([{
+          id: 1, total_amount: '1000.00', paid_amount: '0.00', status: 'PENDING',
+        }]);
         mockPrisma.payment.create.mockResolvedValue({ id: 1, amount: '500.00' });
         mockPrisma.invoice.update.mockResolvedValue({});
         mockPrisma.transaction.create.mockResolvedValue({});
@@ -96,14 +82,9 @@ describe('PaymentsService', () => {
 
     it('sets invoice status to PAID when fully paid', async () => {
       mockPrisma.$transaction.mockImplementation(async (fn: Function) => {
-        mockPrisma.$queryRaw.mockResolvedValue([
-          {
-            id: 1,
-            total_amount: '1000.00',
-            paid_amount: '0.00',
-            status: 'PENDING',
-          },
-        ]);
+        mockPrisma.$queryRaw.mockResolvedValue([{
+          id: 1, total_amount: '1000.00', paid_amount: '0.00', status: 'PENDING',
+        }]);
         mockPrisma.payment.create.mockResolvedValue({ id: 1, amount: '1000.00' });
         mockPrisma.invoice.update.mockResolvedValue({});
         mockPrisma.transaction.create.mockResolvedValue({});
@@ -117,14 +98,9 @@ describe('PaymentsService', () => {
 
     it('creates a CREDIT ledger entry on payment', async () => {
       mockPrisma.$transaction.mockImplementation(async (fn: Function) => {
-        mockPrisma.$queryRaw.mockResolvedValue([
-          {
-            id: 1,
-            total_amount: '500.00',
-            paid_amount: '0.00',
-            status: 'PENDING',
-          },
-        ]);
+        mockPrisma.$queryRaw.mockResolvedValue([{
+          id: 1, total_amount: '500.00', paid_amount: '0.00', status: 'PENDING',
+        }]);
         mockPrisma.payment.create.mockResolvedValue({ id: 1 });
         mockPrisma.invoice.update.mockResolvedValue({});
         mockPrisma.transaction.create.mockResolvedValue({});

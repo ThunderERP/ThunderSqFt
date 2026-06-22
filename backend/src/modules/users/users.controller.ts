@@ -1,14 +1,5 @@
 // src/modules/users/users.controller.ts
-import {
-  Controller,
-  Get,
-  Patch,
-  Param,
-  Body,
-  Query,
-  ParseIntPipe,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -28,16 +19,12 @@ export class UsersController {
   @Get()
   @Roles(Role.DEVELOPER_ADMIN, Role.BUSINESS_OWNER)
   @ApiOperation({ summary: 'List all users' })
-  findAll(@Query() dto: PaginationDto) {
-    return this.usersService.findAll(dto);
-  }
+  findAll(@Query() dto: PaginationDto) { return this.usersService.findAll(dto); }
 
   @Get(':id')
   @Roles(Role.DEVELOPER_ADMIN, Role.BUSINESS_OWNER)
   @ApiOperation({ summary: 'Get a user by ID' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOne(id);
-  }
+  findOne(@Param('id', ParseIntPipe) id: number) { return this.usersService.findOne(id); }
 
   @Patch(':id')
   @Roles(Role.DEVELOPER_ADMIN)
@@ -49,14 +36,10 @@ export class UsersController {
   @Patch(':id/deactivate')
   @Roles(Role.DEVELOPER_ADMIN)
   @ApiOperation({ summary: 'Deactivate a user account' })
-  deactivate(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.deactivate(id);
-  }
+  deactivate(@Param('id', ParseIntPipe) id: number) { return this.usersService.deactivate(id); }
 
   @Patch(':id/activate')
   @Roles(Role.DEVELOPER_ADMIN)
   @ApiOperation({ summary: 'Activate a user account' })
-  activate(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.activate(id);
-  }
+  activate(@Param('id', ParseIntPipe) id: number) { return this.usersService.activate(id); }
 }

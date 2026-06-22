@@ -4,7 +4,7 @@ import { Search } from 'lucide-react'
 interface Column<T> {
   key: string
   label: string
-  render?: (item: T) => ReactNode
+  render?: (val: any, item: T) => ReactNode
 }
 
 interface DataTableProps<T> {
@@ -96,7 +96,7 @@ export default function DataTable<T extends Record<string, any>>({
               >
                 {columns.map((col) => (
                   <td key={col.key} className="px-6 py-4 text-sm text-gray-700">
-                    {col.render ? col.render(item) : item[col.key]}
+                    {col.render ? col.render(item[col.key], item) : item[col.key]}
                   </td>
                 ))}
               </tr>

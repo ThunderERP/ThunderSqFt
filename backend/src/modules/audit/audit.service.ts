@@ -61,7 +61,9 @@ export class AuditService {
     if (fromDate && toDate) {
       const from = new Date(fromDate);
       const to = new Date(toDate);
-      return this.prisma.$queryRaw<{ action: string; count: bigint; last_seen: Date }[]>`
+      return this.prisma.$queryRaw<
+        { action: string; count: bigint; last_seen: Date }[]
+      >`
         SELECT action, COUNT(*) as count, MAX(timestamp) as last_seen
         FROM audit_logs
         WHERE timestamp BETWEEN ${from} AND ${to}
@@ -69,7 +71,9 @@ export class AuditService {
         ORDER BY count DESC
       `;
     }
-    return this.prisma.$queryRaw<{ action: string; count: bigint; last_seen: Date }[]>`
+    return this.prisma.$queryRaw<
+      { action: string; count: bigint; last_seen: Date }[]
+    >`
       SELECT action, COUNT(*) as count, MAX(timestamp) as last_seen
       FROM audit_logs
       GROUP BY action

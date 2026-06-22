@@ -1,15 +1,7 @@
 // src/modules/suppliers/suppliers.controller.ts
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
+  Controller, Get, Post, Patch, Delete, Body, Param,
+  Query, ParseIntPipe, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SuppliersService } from './suppliers.service';
@@ -44,9 +36,7 @@ export class SuppliersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get supplier with purchase history' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.svc.findOne(id);
-  }
+  findOne(@Param('id', ParseIntPipe) id: number) { return this.svc.findOne(id); }
 
   @Patch(':id')
   @Roles(Role.INVENTORY_MANAGER, Role.DEVELOPER_ADMIN)
@@ -58,7 +48,5 @@ export class SuppliersController {
   @Delete(':id')
   @Roles(Role.INVENTORY_MANAGER, Role.DEVELOPER_ADMIN)
   @ApiOperation({ summary: 'Soft-delete supplier' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.svc.remove(id);
-  }
+  remove(@Param('id', ParseIntPipe) id: number) { return this.svc.remove(id); }
 }

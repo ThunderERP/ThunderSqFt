@@ -5,40 +5,18 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 
 const mockPrisma = {
-  lead: {
-    create: jest.fn(),
-    findUnique: jest.fn(),
-    findMany: jest.fn(),
-    findFirst: jest.fn(),
-    update: jest.fn(),
-    count: jest.fn(),
-  },
-  customer: { findUnique: jest.fn(), findFirst: jest.fn(), create: jest.fn() },
-  complaint: {
-    create: jest.fn(),
-    findUnique: jest.fn(),
-    findMany: jest.fn(),
-    update: jest.fn(),
-    count: jest.fn(),
-  },
-  auditLog: { create: jest.fn() },
+  lead:      { create: jest.fn(), findUnique: jest.fn(), findMany: jest.fn(), findFirst: jest.fn(), update: jest.fn(), count: jest.fn() },
+  customer:  { findUnique: jest.fn(), findFirst: jest.fn(), create: jest.fn() },
+  complaint: { create: jest.fn(), findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn(), count: jest.fn() },
+  auditLog:  { create: jest.fn() },
   $transaction: jest.fn(),
 };
 
 const makeLead = (status = 'NEW') => ({
-  id: 1,
-  name: 'Test Lead',
-  phone: '9999999999',
-  email: 'lead@test.com',
-  source: 'REFERRAL',
-  status,
-  notes: null,
-  assignedTo: null,
-  convertedToCustomerId: null,
-  isActive: true,
-  createdBy: 1,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  id: 1, name: 'Test Lead', phone: '9999999999', email: 'lead@test.com',
+  source: 'REFERRAL', status, notes: null, assignedTo: null,
+  convertedToCustomerId: null, isActive: true, createdBy: 1,
+  createdAt: new Date(), updatedAt: new Date(),
 });
 
 describe('CrmService', () => {
@@ -46,7 +24,10 @@ describe('CrmService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CrmService, { provide: PrismaService, useValue: mockPrisma }],
+      providers: [
+        CrmService,
+        { provide: PrismaService, useValue: mockPrisma },
+      ],
     }).compile();
     service = module.get<CrmService>(CrmService);
     jest.clearAllMocks();
@@ -88,15 +69,8 @@ describe('CrmService', () => {
       mockPrisma.lead.findUnique.mockResolvedValue(makeLead('NEW'));
       mockPrisma.$transaction.mockImplementation(async (fn: Function) => fn(mockPrisma));
       mockPrisma.customer.findFirst.mockResolvedValue(null); // no existing phone match
-      mockPrisma.customer.create.mockResolvedValue({
-        id: 5,
-        name: 'Test Lead',
-        phone: '9999999999',
-      });
-      mockPrisma.lead.update.mockResolvedValue({
-        ...makeLead('CONVERTED'),
-        convertedToCustomerId: 5,
-      });
+      mockPrisma.customer.create.mockResolvedValue({ id: 5, name: 'Test Lead', phone: '9999999999' });
+      mockPrisma.lead.update.mockResolvedValue({ ...makeLead('CONVERTED'), convertedToCustomerId: 5 });
       mockPrisma.auditLog.create.mockResolvedValue({});
 
       const result = await service.convertLead(1, {}, 1);
@@ -108,10 +82,7 @@ describe('CrmService', () => {
       mockPrisma.lead.findUnique.mockResolvedValue(makeLead('NEW'));
       mockPrisma.$transaction.mockImplementation(async (fn: Function) => fn(mockPrisma));
       mockPrisma.customer.findUnique.mockResolvedValue({ id: 3, name: 'Existing', isActive: true });
-      mockPrisma.lead.update.mockResolvedValue({
-        ...makeLead('CONVERTED'),
-        convertedToCustomerId: 3,
-      });
+      mockPrisma.lead.update.mockResolvedValue({ ...makeLead('CONVERTED'), convertedToCustomerId: 3 });
       mockPrisma.auditLog.create.mockResolvedValue({});
 
       const result = await service.convertLead(1, { existingCustomerId: 3 }, 1);
@@ -132,10 +103,7 @@ describe('CrmService', () => {
     it('creates complaint with OPEN status', async () => {
       mockPrisma.customer.findUnique.mockResolvedValue({ id: 1, isActive: true });
       mockPrisma.complaint.create.mockResolvedValue({ id: 1, status: 'OPEN' });
-      const result = await service.createComplaint(
-        { customerId: 1, subject: 'Issue', description: 'Long description here' },
-        1,
-      );
+      const result = await service.createComplaint({ customerId: 1, subject: 'Issue', description: 'Long description here' }, 1);
       expect(mockPrisma.complaint.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: expect.objectContaining({ status: 'OPEN' }) }),
       );

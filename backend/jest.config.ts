@@ -6,7 +6,7 @@ const config: Config = {
   testRegex: '.*\\.spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': ['ts-jest', {
-      tsconfig: '../tsconfig.json',
+      tsconfig: './tsconfig.json',
     }],
   },
   collectCoverageFrom: ['**/*.(t|j)s', '!**/*.spec.ts', '!**/node_modules/**'],

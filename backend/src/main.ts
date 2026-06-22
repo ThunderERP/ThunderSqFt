@@ -32,7 +32,7 @@ async function bootstrap() {
 
   // ── CORS ──────────────────────────────────────────────────────────────────
   app.enableCors({
-    origin: ['http://localhost:5174'],
+    origin: process.env.ALLOWED_ORIGINS?.split(',') ?? ['http://localhost:5173'],
     credentials: true,
   });
 
@@ -43,7 +43,10 @@ async function bootstrap() {
       'Complete REST API for ThunderERP — Finance, CRM, Sales, Procurement, Inventory',
     )
     .setVersion('1.0')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT-auth')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'JWT-auth',
+    )
     .addTag('Auth', 'Authentication & authorization')
     .addTag('Users', 'User management')
     .addTag('Customers', 'Customer records')

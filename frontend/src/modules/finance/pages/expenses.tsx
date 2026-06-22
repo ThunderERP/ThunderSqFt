@@ -1,4 +1,4 @@
-import { Trash2, Plus, Receipt, Tag, User, Calendar, CreditCard } from 'lucide-react'
+import { Trash2, Plus, ReceiptIndianRupee, Tag, User, Calendar, CreditCard } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import PageHeader from '../components/PageHeader'
@@ -132,7 +132,7 @@ export default function Expenses() {
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Description</label>
             <div className="relative">
-              <Receipt size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <ReceiptIndianRupee size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 required
                 type="text"

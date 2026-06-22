@@ -195,8 +195,8 @@ export default function Salary() {
       render: (item: any) => <StatusBadge status={item.department} />,
     },
     { key: 'basicSalary', label: 'Basic Salary', render: (item: any) => `₹${Number(item.basicSalary).toLocaleString()}` },
-    { key: 'allowances', label: 'Allowances', render: (item: any) => <span className="text-emerald-600">+${Number(item.allowances).toLocaleString()}</span> },
-    { key: 'deductions', label: 'Deductions', render: (item: any) => <span className="text-red-500">-${Number(item.deductions).toLocaleString()}</span> },
+    { key: 'allowances', label: 'Allowances', render: (item: any) => <span className="text-emerald-600">+₹{Number(item.allowances).toLocaleString()}</span> },
+    { key: 'deductions', label: 'Deductions', render: (item: any) => <span className="text-red-500">-₹{Number(item.deductions).toLocaleString()}</span> },
     {
       key: 'net', label: 'Net Salary', render: (item: any) => {
         const net = Number(item.basicSalary) + Number(item.allowances) - Number(item.deductions)
@@ -462,20 +462,20 @@ export default function Salary() {
             </div>
             <div className="flex justify-between border-b pb-4">
               <span className="text-gray-500">Basic Salary</span>
-              <span className="font-medium">${Number(selectedEmployee.basicSalary).toLocaleString()}</span>
+              <span className="font-medium">₹{Number(selectedEmployee.basicSalary).toLocaleString()}</span>
             </div>
             <div className="flex justify-between border-b pb-4">
               <span className="text-gray-500">Allowances</span>
-              <span className="font-medium text-emerald-600">+${Number(selectedEmployee.allowances).toLocaleString()}</span>
+              <span className="font-medium text-emerald-600">+₹{Number(selectedEmployee.allowances).toLocaleString()}</span>
             </div>
             <div className="flex justify-between border-b pb-4">
               <span className="text-gray-500">Deductions</span>
-              <span className="font-medium text-red-500">-${Number(selectedEmployee.deductions).toLocaleString()}</span>
+              <span className="font-medium text-red-500">-₹{Number(selectedEmployee.deductions).toLocaleString()}</span>
             </div>
             <div className="flex justify-between pt-2">
               <span className="text-gray-500 font-medium">Net Salary</span>
               <span className="font-bold text-lg text-gray-900">
-                ${(Number(selectedEmployee.basicSalary) + Number(selectedEmployee.allowances) - Number(selectedEmployee.deductions)).toLocaleString()}
+                ₹{(Number(selectedEmployee.basicSalary) + Number(selectedEmployee.allowances) - Number(selectedEmployee.deductions)).toLocaleString()}
               </span>
             </div>
           </div>

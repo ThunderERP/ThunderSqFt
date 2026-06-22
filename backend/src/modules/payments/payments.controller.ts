@@ -1,5 +1,7 @@
 // src/modules/payments/payments.controller.ts
-import { Controller, Get, Post, Body, Param, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {
+  Controller, Get, Post, Body, Param, Query, ParseIntPipe, UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/payment.dto';
@@ -39,7 +41,5 @@ export class PaymentsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get payment details with ledger entry' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.svc.findOne(id);
-  }
+  findOne(@Param('id', ParseIntPipe) id: number) { return this.svc.findOne(id); }
 }

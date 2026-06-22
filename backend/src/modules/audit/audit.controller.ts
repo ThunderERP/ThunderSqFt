@@ -19,8 +19,7 @@ export class AuditController {
   @Get()
   @ApiOperation({
     summary: 'Query the audit log — filterable by user, entity, action, and date',
-    description:
-      'SRS 2.3: Non-volatile audit log. Captures User_id, Action, Timestamp, Reference_id.',
+    description: 'SRS 2.3: Non-volatile audit log. Captures User_id, Action, Timestamp, Reference_id.',
   })
   @ApiQuery({ name: 'userId', required: false, type: Number })
   @ApiQuery({ name: 'entityType', required: false, example: 'Order' })

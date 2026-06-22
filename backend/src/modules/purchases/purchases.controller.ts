@@ -1,14 +1,7 @@
 // src/modules/purchases/purchases.controller.ts
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
+  Controller, Get, Post, Patch, Body, Param,
+  Query, ParseIntPipe, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { PurchasesService } from './purchases.service';
@@ -44,9 +37,7 @@ export class PurchasesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get purchase order details with items' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.svc.findOne(id);
-  }
+  findOne(@Param('id', ParseIntPipe) id: number) { return this.svc.findOne(id); }
 
   @Patch(':id/approve')
   @Roles(Role.BUSINESS_OWNER, Role.DEVELOPER_ADMIN)

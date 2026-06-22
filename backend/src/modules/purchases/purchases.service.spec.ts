@@ -12,39 +12,19 @@ import { PurchaseStatus, Role } from '@prisma/client';
 
 const mockPrisma = {
   supplier: { findUnique: jest.fn() },
-  product: { findMany: jest.fn() },
-  purchase: {
-    create: jest.fn(),
-    findUnique: jest.fn(),
-    update: jest.fn(),
-    findMany: jest.fn(),
-    count: jest.fn(),
-  },
+  product:  { findMany: jest.fn() },
+  purchase: { create: jest.fn(), findUnique: jest.fn(), update: jest.fn(), findMany: jest.fn(), count: jest.fn() },
   auditLog: { create: jest.fn() },
   $transaction: jest.fn(),
 };
 
 const mockInventorySvc = { atomicAdd: jest.fn() };
 
-const makePurchase = (
-  status: PurchaseStatus,
-  items = [
-    { id: 1, productId: 1, quantity: 10, unitPrice: '100', lineTotal: '1000', purchaseId: 1 },
-  ],
-) => ({
-  id: 1,
-  supplierId: 1,
-  status,
-  totalAmount: '1000',
-  isActive: true,
-  createdBy: 1,
-  approvedBy: null,
-  approvedAt: null,
-  purchaseDate: new Date(),
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  notes: null,
-  expectedDeliveryDate: null,
+const makePurchase = (status: PurchaseStatus, items = [{ id: 1, productId: 1, quantity: 10, unitPrice: '100', lineTotal: '1000', purchaseId: 1 }]) => ({
+  id: 1, supplierId: 1, status, totalAmount: '1000', isActive: true,
+  createdBy: 1, approvedBy: null, approvedAt: null,
+  purchaseDate: new Date(), createdAt: new Date(), updatedAt: new Date(),
+  notes: null, expectedDeliveryDate: null,
   items,
   supplier: { id: 1, name: 'Test Supplier', email: null },
 });
@@ -56,7 +36,7 @@ describe('PurchasesService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PurchasesService,
-        { provide: PrismaService, useValue: mockPrisma },
+        { provide: PrismaService,    useValue: mockPrisma },
         { provide: InventoryService, useValue: mockInventorySvc },
       ],
     }).compile();
@@ -69,10 +49,7 @@ describe('PurchasesService', () => {
     it('throws NotFoundException when supplier does not exist', async () => {
       mockPrisma.supplier.findUnique.mockResolvedValue(null);
       await expect(
-        service.create(
-          { supplierId: 99, items: [{ productId: 1, quantity: 5, unitPrice: 100 }] },
-          1,
-        ),
+        service.create({ supplierId: 99, items: [{ productId: 1, quantity: 5, unitPrice: 100 }] }, 1),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -82,8 +59,7 @@ describe('PurchasesService', () => {
       mockPrisma.purchase.create.mockResolvedValue(makePurchase(PurchaseStatus.PENDING));
 
       const result = await service.create(
-        { supplierId: 1, items: [{ productId: 1, quantity: 5, unitPrice: 100 }] },
-        1,
+        { supplierId: 1, items: [{ productId: 1, quantity: 5, unitPrice: 100 }] }, 1,
       );
       expect(result.status).toBe(PurchaseStatus.PENDING);
     });
@@ -93,9 +69,7 @@ describe('PurchasesService', () => {
   describe('approve', () => {
     it('throws ForbiddenException for non-BUSINESS_OWNER roles', async () => {
       await expect(service.approve(1, 1, Role.SALES_MANAGER)).rejects.toThrow(ForbiddenException);
-      await expect(service.approve(1, 1, Role.INVENTORY_MANAGER)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(service.approve(1, 1, Role.INVENTORY_MANAGER)).rejects.toThrow(ForbiddenException);
       await expect(service.approve(1, 1, Role.FINANCE_MANAGER)).rejects.toThrow(ForbiddenException);
     });
 
@@ -121,9 +95,7 @@ describe('PurchasesService', () => {
 
     it('throws UnprocessableEntityException if purchase not PENDING', async () => {
       mockPrisma.purchase.findUnique.mockResolvedValue(makePurchase(PurchaseStatus.APPROVED));
-      await expect(service.approve(1, 1, Role.BUSINESS_OWNER)).rejects.toThrow(
-        UnprocessableEntityException,
-      );
+      await expect(service.approve(1, 1, Role.BUSINESS_OWNER)).rejects.toThrow(UnprocessableEntityException);
     });
   });
 
@@ -140,10 +112,7 @@ describe('PurchasesService', () => {
       mockPrisma.$transaction.mockImplementation(async (fn: Function) => fn(mockPrisma));
       mockPrisma.purchase.findUnique.mockResolvedValue(purchase);
       mockInventorySvc.atomicAdd.mockResolvedValue(undefined);
-      mockPrisma.purchase.update.mockResolvedValue({
-        ...purchase,
-        status: PurchaseStatus.RECEIVED,
-      });
+      mockPrisma.purchase.update.mockResolvedValue({ ...purchase, status: PurchaseStatus.RECEIVED });
       mockPrisma.auditLog.create.mockResolvedValue({});
 
       await service.receiveGoods(1, 1);

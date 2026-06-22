@@ -25,7 +25,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? (exceptionResponse as Record<string, unknown>).message
         : exception.message;
 
-    this.logger.error(`${request.method} ${request.url} → ${status}: ${JSON.stringify(message)}`);
+    this.logger.error(
+      `${request.method} ${request.url} → ${status}: ${JSON.stringify(message)}`,
+    );
 
     response.status(status).json({
       success: false,

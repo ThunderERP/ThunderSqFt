@@ -1,15 +1,7 @@
 // src/modules/products/products.controller.ts
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
+  Controller, Get, Post, Patch, Delete,
+  Body, Param, Query, ParseIntPipe, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
@@ -50,15 +42,11 @@ export class ProductsController {
 
   @Get('categories')
   @ApiOperation({ summary: 'Get all distinct product categories' })
-  getCategories() {
-    return this.svc.getCategories();
-  }
+  getCategories() { return this.svc.getCategories(); }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get product with current inventory levels' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.svc.findOne(id);
-  }
+  findOne(@Param('id', ParseIntPipe) id: number) { return this.svc.findOne(id); }
 
   @Patch(':id')
   @Roles(Role.INVENTORY_MANAGER, Role.DEVELOPER_ADMIN)
@@ -70,7 +58,5 @@ export class ProductsController {
   @Delete(':id')
   @Roles(Role.INVENTORY_MANAGER, Role.DEVELOPER_ADMIN)
   @ApiOperation({ summary: 'Soft-delete a product' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.svc.remove(id);
-  }
+  remove(@Param('id', ParseIntPipe) id: number) { return this.svc.remove(id); }
 }

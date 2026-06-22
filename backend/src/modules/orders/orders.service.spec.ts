@@ -3,7 +3,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { OrdersService } from './orders.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InventoryService } from '../inventory/inventory.service';
-import { ConflictException, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { OrderStatus } from '@prisma/client';
 
 // ── Minimal Prisma mock ───────────────────────────────────────────────────────
@@ -45,18 +49,7 @@ const makeOrder = (status: OrderStatus) => ({
   orderDate: new Date(),
   createdAt: new Date(),
   updatedAt: new Date(),
-  items: [
-    {
-      id: 1,
-      productId: 1,
-      quantity: 2,
-      unitPrice: '499.99',
-      gstPct: '18',
-      discountPct: '0',
-      lineTotal: '1000.00',
-      orderId: 1,
-    },
-  ],
+  items: [{ id: 1, productId: 1, quantity: 2, unitPrice: '499.99', gstPct: '18', discountPct: '0', lineTotal: '1000.00', orderId: 1 }],
   customer: { id: 1, name: 'Test Customer', phone: '9999999999' },
   invoice: null,
   tracking: null,
@@ -119,31 +112,30 @@ describe('OrdersService', () => {
   // ── State machine ──────────────────────────────────────────────────────────
   describe('state machine — assertTransition', () => {
     const invalidTransitions: [OrderStatus, OrderStatus][] = [
-      [OrderStatus.PENDING, OrderStatus.SHIPPED],
-      [OrderStatus.PENDING, OrderStatus.DELIVERED],
+      [OrderStatus.PENDING,   OrderStatus.SHIPPED],
+      [OrderStatus.PENDING,   OrderStatus.DELIVERED],
       [OrderStatus.CONFIRMED, OrderStatus.DELIVERED],
       [OrderStatus.DELIVERED, OrderStatus.PENDING],
       [OrderStatus.COMPLETED, OrderStatus.CONFIRMED],
       [OrderStatus.CANCELLED, OrderStatus.CONFIRMED],
     ];
 
-    it.each(invalidTransitions)('blocks invalid transition %s → %s', async (from, to) => {
-      mockPrisma.$transaction.mockImplementation(async (fn: Function) => fn(mockPrisma));
-      mockPrisma.order.findUnique.mockResolvedValue(makeOrder(from));
+    it.each(invalidTransitions)(
+      'blocks invalid transition %s → %s',
+      async (from, to) => {
+        mockPrisma.$transaction.mockImplementation(async (fn: Function) => fn(mockPrisma));
+        mockPrisma.order.findUnique.mockResolvedValue(makeOrder(from));
 
-      const action =
-        to === OrderStatus.SHIPPED
-          ? () => service.ship(1, '', 1)
-          : to === OrderStatus.DELIVERED
-            ? () => service.deliver(1, 1)
-            : to === OrderStatus.CONFIRMED
-              ? () => service.confirm(1, 1)
-              : to === OrderStatus.COMPLETED
-                ? () => service.complete(1, 1)
-                : () => service.cancel(1, 'test', 1);
+        const action =
+          to === OrderStatus.SHIPPED ? () => service.ship(1, '', 1)
+          : to === OrderStatus.DELIVERED ? () => service.deliver(1, 1)
+          : to === OrderStatus.CONFIRMED ? () => service.confirm(1, 1)
+          : to === OrderStatus.COMPLETED ? () => service.complete(1, 1)
+          : () => service.cancel(1, 'test', 1);
 
-      await expect(action()).rejects.toThrow(UnprocessableEntityException);
-    });
+        await expect(action()).rejects.toThrow(UnprocessableEntityException);
+      },
+    );
 
     it('allows PENDING → CANCELLED', async () => {
       mockPrisma.$transaction.mockImplementation(async (fn: Function) => fn(mockPrisma));

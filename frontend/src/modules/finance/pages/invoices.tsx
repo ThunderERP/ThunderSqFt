@@ -1,4 +1,4 @@
-import { Eye, Download, Mail, Plus, X, User, DollarSign, Calendar } from 'lucide-react'
+import { Eye, Download, Mail, Plus, X, User, IndianRupee, Calendar } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { jsPDF } from 'jspdf'
@@ -53,14 +53,14 @@ export default function Invoices() {
     autoTable(doc, {
       startY: 80,
       head: [['Description', 'Quantity', 'Rate', 'Amount']],
-      body: [['Professional Services', '1', `$${invoice.amount.toLocaleString()}`, `$${invoice.amount.toLocaleString()}`]],
+      body: [['Professional Services', '1', `Rs. ${invoice.amount.toLocaleString()}`, `Rs. ${invoice.amount.toLocaleString()}`]],
       headStyles: { fillColor: [79, 70, 229] },
       theme: 'striped'
     })
     const finalY = (doc as any).lastAutoTable.finalY
     doc.setFontSize(14)
     doc.setTextColor(30, 41, 59)
-    doc.text(`Total Amount: $${invoice.amount.toLocaleString()}`, 140, finalY + 20)
+    doc.text(`Total Amount: Rs. ${invoice.amount.toLocaleString()}`, 140, finalY + 20)
     doc.save(`${invoice.invoiceId}_ThunderERP.pdf`)
     toast.success(`Invoice ${invoice.invoiceId} downloaded.`)
   }
@@ -177,9 +177,9 @@ export default function Invoices() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Amount ($)</label>
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Amount (₹)</label>
               <div className="relative">
-                <DollarSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <IndianRupee size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   required
                   type="number"

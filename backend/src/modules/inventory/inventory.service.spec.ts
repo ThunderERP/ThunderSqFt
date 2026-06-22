@@ -18,7 +18,10 @@ describe('InventoryService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [InventoryService, { provide: PrismaService, useValue: mockPrisma }],
+      providers: [
+        InventoryService,
+        { provide: PrismaService, useValue: mockPrisma },
+      ],
     }).compile();
 
     service = module.get<InventoryService>(InventoryService);
@@ -28,9 +31,8 @@ describe('InventoryService', () => {
   // ── adjustStock ────────────────────────────────────────────────────────────
   describe('adjustStock', () => {
     it('throws BadRequestException when quantity is 0', async () => {
-      await expect(service.adjustStock(1, { quantity: 0, note: 'test' }, 1)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.adjustStock(1, { quantity: 0, note: 'test' }, 1))
+        .rejects.toThrow(BadRequestException);
     });
 
     it('throws BadRequestException when adjustment would make stock negative', async () => {
@@ -38,9 +40,8 @@ describe('InventoryService', () => {
         mockPrisma.$queryRaw.mockResolvedValue([{ available_qty: 5 }]);
         return fn(mockPrisma);
       });
-      await expect(service.adjustStock(1, { quantity: -10, note: 'test' }, 1)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.adjustStock(1, { quantity: -10, note: 'test' }, 1))
+        .rejects.toThrow(BadRequestException);
     });
 
     it('successfully adjusts stock positively', async () => {
@@ -70,13 +71,7 @@ describe('InventoryService', () => {
     it('throws NotFoundException when no inventory row found', async () => {
       tx.$queryRaw.mockResolvedValue([]);
       await expect(
-        service.atomicReserve(tx as any, {
-          productId: 1,
-          quantity: 5,
-          referenceId: 1,
-          referenceType: 'ORDER',
-          userId: 1,
-        }),
+        service.atomicReserve(tx as any, { productId: 1, quantity: 5, referenceId: 1, referenceType: 'ORDER', userId: 1 }),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -84,13 +79,7 @@ describe('InventoryService', () => {
       tx.$queryRaw.mockResolvedValue([{ available_qty: 3, reserved_qty: 0 }]);
       const { ConflictException } = await import('@nestjs/common');
       await expect(
-        service.atomicReserve(tx as any, {
-          productId: 1,
-          quantity: 5,
-          referenceId: 1,
-          referenceType: 'ORDER',
-          userId: 1,
-        }),
+        service.atomicReserve(tx as any, { productId: 1, quantity: 5, referenceId: 1, referenceType: 'ORDER', userId: 1 }),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -100,18 +89,12 @@ describe('InventoryService', () => {
       tx.stockMovement.create.mockResolvedValue({ id: 1 });
 
       await service.atomicReserve(tx as any, {
-        productId: 1,
-        quantity: 5,
-        referenceId: 1,
-        referenceType: 'ORDER',
-        userId: 1,
+        productId: 1, quantity: 5, referenceId: 1, referenceType: 'ORDER', userId: 1,
       });
 
       expect(tx.$executeRaw).toHaveBeenCalled();
       expect(tx.stockMovement.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ type: 'RESERVATION', quantity: 5 }),
-        }),
+        expect.objectContaining({ data: expect.objectContaining({ type: 'RESERVATION', quantity: 5 }) }),
       );
     });
   });
@@ -127,13 +110,7 @@ describe('InventoryService', () => {
     it('throws BadRequestException when reserved qty is insufficient', async () => {
       tx.$queryRaw.mockResolvedValue([{ reserved_qty: 2 }]);
       await expect(
-        service.atomicDeduct(tx as any, {
-          productId: 1,
-          quantity: 5,
-          referenceId: 1,
-          referenceType: 'ORDER',
-          userId: 1,
-        }),
+        service.atomicDeduct(tx as any, { productId: 1, quantity: 5, referenceId: 1, referenceType: 'ORDER', userId: 1 }),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -143,11 +120,7 @@ describe('InventoryService', () => {
       tx.stockMovement.create.mockResolvedValue({ id: 1 });
 
       await service.atomicDeduct(tx as any, {
-        productId: 1,
-        quantity: 5,
-        referenceId: 1,
-        referenceType: 'ORDER',
-        userId: 1,
+        productId: 1, quantity: 5, referenceId: 1, referenceType: 'ORDER', userId: 1,
       });
 
       expect(tx.$executeRaw).toHaveBeenCalled();

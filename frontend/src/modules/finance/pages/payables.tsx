@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Eye, DollarSign, Calendar } from 'lucide-react'
+import { Eye, IndianRupee, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
 import PageHeader from '../components/PageHeader'
 import StatCard from '../components/StatCard'
@@ -78,7 +78,7 @@ export default function Payables() {
               }}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-500 text-white rounded-lg text-xs font-medium hover:bg-primary-600 shadow-sm transition-all"
             >
-              <DollarSign size={14} />
+              <IndianRupee size={14} />
               Pay
             </button>
           )}
@@ -132,7 +132,7 @@ export default function Payables() {
             </div>
             <div className="flex justify-between border-b pb-4">
               <span className="text-gray-500">Amount</span>
-              <span className="font-semibold text-lg">${selectedBill.amount.toLocaleString()}</span>
+              <span className="font-semibold text-lg">₹{selectedBill.amount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between border-b pb-4">
               <span className="text-gray-500">Due Date</span>
@@ -156,7 +156,7 @@ export default function Payables() {
           <div className="space-y-6">
             <p className="text-gray-600">
               Are you sure you want to mark bill <span className="font-semibold text-gray-900">{selectedBill.billId}</span> as paid?
-              This will record a payment of <span className="font-semibold text-emerald-600">${selectedBill.amount.toLocaleString()}</span>.
+              This will record a payment of <span className="font-semibold text-emerald-600">₹{selectedBill.amount.toLocaleString()}</span>.
             </p>
             <div className="flex justify-end gap-3">
               <button

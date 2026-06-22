@@ -51,7 +51,9 @@ export class ReturnsService {
 
     // Validate the product was part of this order
     if (!order.items.length) {
-      throw new BadRequestException(`Product #${dto.productId} was not in order #${dto.orderId}`);
+      throw new BadRequestException(
+        `Product #${dto.productId} was not in order #${dto.orderId}`,
+      );
     }
 
     const orderedQty = order.items[0].quantity;
@@ -122,7 +124,9 @@ export class ReturnsService {
         });
         if (!ret) throw new NotFoundException(`Return #${returnId} not found`);
         if (ret.status !== ReturnStatus.REQUESTED) {
-          throw new UnprocessableEntityException(`Return is already ${ret.status}`);
+          throw new UnprocessableEntityException(
+            `Return is already ${ret.status}`,
+          );
         }
 
         const isApproved = dto.status === ReturnStatus.APPROVED;
@@ -231,3 +235,4 @@ export class ReturnsService {
     return r;
   }
 }
+

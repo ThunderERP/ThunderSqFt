@@ -1,14 +1,7 @@
 // src/modules/returns/returns.controller.ts
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
+  Controller, Get, Post, Patch, Body, Param,
+  Query, ParseIntPipe, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { ReturnsService } from './returns.service';
@@ -47,9 +40,7 @@ export class ReturnsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get return request details' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.svc.findOne(id);
-  }
+  findOne(@Param('id', ParseIntPipe) id: number) { return this.svc.findOne(id); }
 
   @Patch(':id/process')
   @Roles(Role.REFUND_HANDLER, Role.FINANCE_MANAGER, Role.DEVELOPER_ADMIN)

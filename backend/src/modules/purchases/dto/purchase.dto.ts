@@ -1,14 +1,7 @@
 // src/modules/purchases/dto/purchase.dto.ts
 import {
-  IsInt,
-  IsPositive,
-  IsArray,
-  ValidateNested,
-  ArrayMinSize,
-  IsOptional,
-  IsString,
-  IsDateString,
-  IsNumber,
+  IsInt, IsPositive, IsArray, ValidateNested,
+  ArrayMinSize, IsOptional, IsString, IsDateString, IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';

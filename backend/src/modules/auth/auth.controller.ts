@@ -1,13 +1,6 @@
 // src/modules/auth/auth.controller.ts
 import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  Get,
-  Request,
-  HttpCode,
-  HttpStatus,
+  Controller, Post, Body, UseGuards, Get, Request, HttpCode, HttpStatus,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
