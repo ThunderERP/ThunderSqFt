@@ -1,10 +1,12 @@
 import { PageTransition, StaggerContainer, StaggerItem } from '../../shared/components/MotionComponents'
-import PageHeader from '../../finance/components/PageHeader'
-import StatCard from '../../finance/components/StatCard'
+import PageHeader from '../../shared/components/PageHeader'
+import StatCard from '../../shared/components/StatCard'
 import { Users, CalendarCheck, Home, PhoneCall, TrendingUp } from 'lucide-react'
-import { LEAD_STAGES, LEAD_SOURCES, SOURCE_COLORS } from '../utils/leadStages'
+import { LEAD_STAGES, LEAD_SOURCES } from '../utils/leadStages'
 import { Doughnut } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import DataTable from '../../shared/components/DataTable'
+import StatusBadge from '../../shared/components/StatusBadge'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -17,12 +19,12 @@ export default function SalesDashboard() {
     datasets: [{
       data: [420, 310, 205, 150, 115, 48],
       backgroundColor: [
-        SOURCE_COLORS['Facebook'].text,
-        SOURCE_COLORS['Google'].text,
-        SOURCE_COLORS['WhatsApp'].text,
-        SOURCE_COLORS['Reference'].text,
-        SOURCE_COLORS['Walk-in'].text,
-        SOURCE_COLORS['Portal'].text,
+        'var(--accent)',
+        'var(--success)',
+        'var(--gold)',
+        'var(--violet)',
+        'var(--danger)',
+        'var(--ink-muted)',
       ],
       borderWidth: 0,
     }]
@@ -31,7 +33,15 @@ export default function SalesDashboard() {
   const doughnutOptions = {
     cutout: '75%',
     plugins: {
-      legend: { position: 'right' as const, labels: { usePointStyle: true, boxWidth: 8 } }
+      legend: { 
+        position: 'right' as const, 
+        labels: { 
+          usePointStyle: true, 
+          boxWidth: 8,
+          color: 'var(--ink-soft)',
+          font: { family: 'var(--font-sans)', size: 11, weight: 'bold' as any }
+        } 
+      }
     }
   }
 
@@ -41,23 +51,50 @@ export default function SalesDashboard() {
     { id: 3, name: 'Rohan Gupta', branch: 'Delhi', bookings: 7, value: '₹2.8 Cr', grade: 'B+' },
   ]
 
+  const execColumns = [
+    {
+      key: 'name',
+      label: 'Executive',
+      render: (item: any) => (
+        <div>
+          <p className="font-bold text-[var(--ink)] font-sans">{item.name}</p>
+          <p className="text-[10px] text-[var(--ink-soft)] font-sans mt-0.5">{item.branch}</p>
+        </div>
+      )
+    },
+    {
+      key: 'bookings',
+      label: 'Bookings',
+    },
+    {
+      key: 'value',
+      label: 'Value',
+      render: (item: any) => <span className="font-mono text-[var(--gold)] font-bold">{item.value}</span>
+    },
+    {
+      key: 'grade',
+      label: 'Grade',
+      render: (item: any) => <StatusBadge status={item.grade} />
+    }
+  ]
+
   return (
     <PageTransition>
       <div className="space-y-6">
         <PageHeader 
-          title="Sales Command Center" 
+          title={<span className="font-display">Sales Command Center</span>} 
           subtitle="Real-time overview of lead funnel and team performance."
           actions={
-            <button className="bg-[#2563EB] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm">
+            <button className="btn-primary flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]">
               + New Campaign
             </button>
           }
         />
 
         {/* Funnel Hero Section */}
-        <div className="platform-card p-6">
-          <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-            <TrendingUp size={20} className="text-[#2563EB]" />
+        <div className="card p-6 shadow-card text-left">
+          <h2 className="text-base font-bold text-[var(--ink)] mb-6 flex items-center gap-2 font-display">
+            <TrendingUp size={18} className="text-[var(--accent)]" />
             Active Sales Pipeline
           </h2>
           <div className="flex flex-col gap-3">
@@ -65,69 +102,69 @@ export default function SalesDashboard() {
               const count = funnelData[i]
               const pct = Math.round((count / maxLeads) * 100)
               return (
-                <div key={stage} className="flex items-center gap-4 text-sm">
-                  <div className="w-32 font-medium text-gray-700 text-right shrink-0">{stage}</div>
-                  <div className="flex-1 h-10 bg-gray-100 rounded-lg relative overflow-hidden flex items-center">
+                <div key={stage} className="flex items-center gap-4 text-xs">
+                  <div className="w-28 font-bold text-[var(--ink-soft)] text-right shrink-0">{stage}</div>
+                  <div className="flex-1 h-8 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-lg relative overflow-hidden flex items-center">
                     <div 
-                      className="absolute top-0 left-0 bottom-0 bg-[#2563EB]/20 transition-all duration-1000"
+                      className="absolute top-0 left-0 bottom-0 bg-[var(--accent-soft)] transition-all duration-1000"
                       style={{ width: `${pct}%` }}
                     />
                     <div 
-                      className="absolute top-0 left-0 bottom-0 bg-[#2563EB] transition-all duration-1000"
-                      style={{ width: `${pct}%`, opacity: 1 - (i * 0.1) }}
+                      className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-[var(--accent)] to-[var(--accent)]/40 transition-all duration-1000"
+                      style={{ width: `${pct}%`, opacity: 1 - (i * 0.08) }}
                     />
-                    <span className="absolute left-4 font-bold text-white drop-shadow-md z-10">{count}</span>
+                    <span className="absolute left-4 font-mono font-bold text-white z-10">{count}</span>
                   </div>
-                  <div className="w-16 font-bold text-gray-500 text-right">{pct}%</div>
+                  <div className="w-12 font-mono font-bold text-[var(--ink-soft)] text-right">{pct}%</div>
                 </div>
               )
             })}
           </div>
-          <div className="mt-6 flex items-center justify-center gap-8 py-3 bg-gray-50 rounded-xl border border-gray-100">
-            <div className="text-sm"><span className="text-red-500 mr-2">🔴</span>Lost: <span className="font-bold">156 leads</span></div>
-            <div className="w-px h-4 bg-gray-300" />
-            <div className="text-sm"><span className="text-purple-500 mr-2">🟣</span>Future Prospect: <span className="font-bold">64 leads</span></div>
+          <div className="mt-6 flex items-center justify-center gap-6 py-3 bg-[var(--bg-surface)]/30 rounded-xl border border-[var(--border-color)] text-xs">
+            <div className="text-[var(--ink-soft)]"><span className="text-[var(--danger)] mr-1.5">●</span>Lost: <span className="font-mono font-bold text-[var(--danger)]">156 leads</span></div>
+            <div className="w-px h-4 bg-[var(--border-color)]" />
+            <div className="text-[var(--ink-soft)]"><span className="text-[var(--violet)] mr-1.5">●</span>Future Prospect: <span className="font-mono font-bold text-[var(--violet)]">64 leads</span></div>
           </div>
         </div>
 
         {/* KPIs */}
-        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StaggerItem>
             <StatCard
-              title="Total Leads"
+              label="Total Leads"
               value="1,248"
               subtitle="+145 new this month"
-              icon={<Users size={20} />}
+              icon={<Users size={16} />}
               trend="up"
               trendValue="12%"
             />
           </StaggerItem>
           <StaggerItem>
             <StatCard
-              title="Site Visits"
+              label="Site Visits"
               value="290"
               subtitle="148 completed"
-              icon={<CalendarCheck size={20} />}
+              icon={<CalendarCheck size={16} />}
               trend="up"
               trendValue="8%"
             />
           </StaggerItem>
           <StaggerItem>
             <StatCard
-              title="Bookings"
+              label="Bookings"
               value="87"
               subtitle="₹24.5 Cr total value"
-              icon={<Home size={20} />}
+              icon={<Home size={16} />}
               trend="up"
               trendValue="15%"
             />
           </StaggerItem>
           <StaggerItem>
             <StatCard
-              title="Follow-ups Due"
+              label="Follow-ups Due"
               value="142"
-              subtitle={<span className="text-red-500 font-medium">38 overdue today</span>}
-              icon={<PhoneCall size={20} />}
+              subtitle={<span className="text-[var(--danger)] font-bold">38 overdue today</span>}
+              icon={<PhoneCall size={16} />}
               trend="neutral"
               trendValue="0%"
             />
@@ -136,48 +173,19 @@ export default function SalesDashboard() {
 
         {/* Bottom Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="platform-card p-6 flex flex-col">
-            <h3 className="text-lg font-bold text-gray-800 mb-6">Lead Source Distribution</h3>
-            <div className="flex-1 flex items-center justify-center max-h-[250px]">
+          <div className="card p-6 flex flex-col justify-between text-left">
+            <h3 className="text-base font-bold text-[var(--ink)] mb-6 font-display">Lead Source Distribution</h3>
+            <div className="flex-1 flex items-center justify-center max-h-[250px] py-4">
               <Doughnut data={doughnutData} options={doughnutOptions} />
             </div>
           </div>
 
-          <div className="platform-card p-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-6">Top Performers</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-500 bg-gray-50 border-b border-gray-100 uppercase">
-                  <tr>
-                    <th className="px-4 py-3 rounded-tl-xl">Executive</th>
-                    <th className="px-4 py-3">Bookings</th>
-                    <th className="px-4 py-3">Value</th>
-                    <th className="px-4 py-3 rounded-tr-xl">Grade</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {topExecs.map(exec => (
-                    <tr key={exec.id} className="hover:bg-gray-50/50">
-                      <td className="px-4 py-4">
-                        <div className="font-medium text-gray-900">{exec.name}</div>
-                        <div className="text-xs text-gray-500">{exec.branch}</div>
-                      </td>
-                      <td className="px-4 py-4 font-semibold text-gray-700">{exec.bookings}</td>
-                      <td className="px-4 py-4 text-gray-600">{exec.value}</td>
-                      <td className="px-4 py-4">
-                        <span className={`px-2 py-1 rounded-md text-xs font-bold ${
-                          exec.grade === 'A+' ? 'bg-green-100 text-green-700' :
-                          exec.grade === 'A' ? 'bg-blue-100 text-blue-700' :
-                          'bg-amber-100 text-amber-700'
-                        }`}>
-                          {exec.grade}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="space-y-3 text-left">
+            <h3 className="text-base font-bold text-[var(--ink)] font-display">Top Performers</h3>
+            <DataTable
+              columns={execColumns}
+              data={topExecs}
+            />
           </div>
         </div>
       </div>

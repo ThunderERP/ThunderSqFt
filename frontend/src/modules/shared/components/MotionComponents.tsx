@@ -43,7 +43,7 @@ export function StaggerItem({ children, className = '' }: { children: ReactNode;
   const shouldReduce = useReducedMotion()
   return (
     <motion.div
-      className={className}
+      className={`h-full flex flex-col ${className}`}
       variants={{
         hidden: shouldReduce ? { opacity: 0 } : { opacity: 0, y: 20 },
         show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }

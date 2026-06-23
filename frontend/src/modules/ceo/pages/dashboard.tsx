@@ -5,6 +5,10 @@ import {
 import { Users, ArrowUpRight, Briefcase, IndianRupee, BarChart2, FileText, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { PageTransition, CountUp, StaggerList, StaggerItem } from '../../shared/components/MotionComponents'
+import StatCard from '../../shared/components/StatCard'
+import DataTable from '../../shared/components/DataTable'
+import ActivityTimeline from '../../shared/components/ActivityTimeline'
+import StatusBadge from '../../shared/components/StatusBadge'
 
 // Mock Data
 const kpiData = [
@@ -16,13 +20,13 @@ const kpiData = [
   { title: "LOAN FILES", value: 5, icon: FileText, color: "text-accent", bg: "var(--accent-soft)" },
 ]
 
-const salesTrendData = [
-  { month: 'Jan', leads: 25, bookings: 15 },
-  { month: 'Feb', leads: 32, bookings: 22 },
-  { month: 'Mar', leads: 38, bookings: 28 },
-  { month: 'Apr', leads: 43, bookings: 33 },
-  { month: 'May', leads: 48, bookings: 38 },
-  { month: 'Jun', leads: 58, bookings: 45 },
+const revenueVsTargetData = [
+  { month: 'Jan', actual: 12000000, target: 10000000 },
+  { month: 'Feb', actual: 15000000, target: 14000000 },
+  { month: 'Mar', actual: 21000000, target: 18000000 },
+  { month: 'Apr', actual: 28000000, target: 25000000 },
+  { month: 'May', actual: 35000000, target: 32000000 },
+  { month: 'Jun', actual: 48000000, target: 40000000 },
 ]
 
 const leadSourceData = [
@@ -53,11 +57,11 @@ const loanDisbursementsData = [
 ]
 
 const branchPerformanceData = [
-  { branch: 'Delhi', branchSub: 'Delhi', leads: 22, bookings: 16, revenue: 40000000, loanFiles: 3, conversion: 72.7 },
-  { branch: 'Pune', branchSub: 'Pune', leads: 71, bookings: 13, revenue: 33000000, loanFiles: 14, conversion: 18.3 },
-  { branch: 'Bangalore', branchSub: 'Bangalore', leads: 81, bookings: 13, revenue: 33000000, loanFiles: 10, conversion: 16.0 },
-  { branch: 'Hyderabad', branchSub: 'Hyderabad', leads: 73, bookings: 12, revenue: 30000000, loanFiles: 17, conversion: 16.4 },
-  { branch: 'Mumbai', branchSub: 'Mumbai', leads: 84, bookings: 9, revenue: 23000000, loanFiles: 10, conversion: 10.7 },
+  { branch: 'Delhi', branchSub: 'Delhi Branch', leads: 22, bookings: 16, revenue: 40000000, loanFiles: 3, conversion: 72.7 },
+  { branch: 'Pune', branchSub: 'Pune Branch', leads: 71, bookings: 13, revenue: 33000000, loanFiles: 14, conversion: 18.3 },
+  { branch: 'Bangalore', branchSub: 'Bangalore Branch', leads: 81, bookings: 13, revenue: 33000000, loanFiles: 10, conversion: 16.0 },
+  { branch: 'Hyderabad', branchSub: 'Hyderabad Branch', leads: 73, bookings: 12, revenue: 30000000, loanFiles: 17, conversion: 16.4 },
+  { branch: 'Mumbai', branchSub: 'Mumbai Branch', leads: 84, bookings: 9, revenue: 23000000, loanFiles: 10, conversion: 10.7 },
 ]
 
 const loanPipelineData = [
@@ -70,6 +74,14 @@ const loanPipelineData = [
   { label: 'Reg Pending', value: 0, color: 'var(--accent)', border: 'var(--accent-soft)' },
   { label: 'Disb Pending', value: 0, color: 'var(--purple)', border: 'var(--purple-soft)' },
   { label: 'Disbursed', value: 1, color: 'var(--success)', border: 'var(--success-soft)' },
+]
+
+const activityEvents = [
+  { icon: 'Users', color: 'var(--accent)', title: 'New Lead Assigned', time: '10m ago', desc: 'Lead "Rajesh Kumar" assigned to Delhi Branch Agent' },
+  { icon: 'Briefcase', color: 'var(--success)', title: 'Booking Confirmed', time: '45m ago', desc: 'Booking of ₹45,00,000 completed by Pune Branch' },
+  { icon: 'FileText', color: 'var(--purple)', title: 'Loan File Updated', time: '2h ago', desc: 'Loan file #LF-4820 moved to credit review stage' },
+  { icon: 'IndianRupee', color: 'var(--gold)', title: 'Invoice Paid', time: '3h ago', desc: 'Invoice #INV-2024-089 (₹1,20,000) marked as Paid' },
+  { icon: 'Activity', color: 'var(--warning)', title: 'System Alert', time: '5h ago', desc: 'Automation trigger "Lead Follow-up SLA" executed successfully' }
 ]
 
 export default function CEODashboard() {
@@ -92,18 +104,62 @@ export default function CEODashboard() {
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
     return (
-      <text x={x} y={y} fill={leadSourceData[index].color} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={11} fontWeight={600}>
+      <text x={x} y={y} fill={leadSourceData[index].color} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={11} fontWeight={600} className="font-sans">
         {`${name} ${value}%`}
       </text>
     );
   };
+
+  const branchColumns = [
+    {
+      key: 'branch',
+      label: 'Branch',
+      render: (item: any) => (
+        <div>
+          <p className="font-bold text-[var(--ink)] font-sans">{item.branch}</p>
+          <p className="text-[10px] text-[var(--ink-soft)] font-sans mt-0.5">{item.branchSub}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'leads',
+      label: 'Leads',
+    },
+    {
+      key: 'bookings',
+      label: 'Bookings',
+    },
+    {
+      key: 'revenue',
+      label: 'Revenue',
+      render: (item: any) => `₹${item.revenue.toLocaleString('en-IN')}`,
+    },
+    {
+      key: 'loanFiles',
+      label: 'Loan Files',
+    },
+    {
+      key: 'conversion',
+      label: 'Conversion',
+      render: (item: any) => {
+        const value = item.conversion;
+        const label = value > 20 ? 'On-Target' : value > 15 ? 'Watch' : 'At-Risk';
+        return (
+          <div className="flex items-center gap-2 font-mono">
+            <span>{value}%</span>
+            <StatusBadge status={label} />
+          </div>
+        );
+      },
+    },
+  ];
 
   return (
     <PageTransition>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="page-title">CEO Dashboard</h1>
+            <h1 className="page-title font-display">CEO Dashboard</h1>
             <p className="page-subtitle">Executive overview — all branches combined</p>
           </div>
         </div>
@@ -150,7 +206,7 @@ export default function CEODashboard() {
 
           <button
             onClick={handleRefresh}
-            className="self-end flex items-center gap-2 btn-secondary"
+            className="self-end flex items-center gap-2 btn-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
             aria-label="Refresh Dashboard Metrics"
           >
             <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
@@ -159,47 +215,52 @@ export default function CEODashboard() {
         </div>
 
         {/* KPI Strip */}
-        <StaggerList className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+        <StaggerList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {kpiData.map((kpi, idx) => (
             <StaggerItem key={idx}>
-              <div className="stat-card">
-                <div className="flex justify-between items-start mb-2">
-                  <p className="stat-card-label">{kpi.title}</p>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: kpi.bg }}>
-                    <kpi.icon className={kpi.color} size={16} />
-                  </div>
-                </div>
-                <h3 className="stat-card-value">
+              <StatCard
+                label={kpi.title}
+                value={
                   <CountUp 
                     value={kpi.value} 
                     prefix={kpi.prefix || ''} 
                     suffix={kpi.suffix || ''} 
                   />
-                </h3>
-              </div>
+                }
+                icon={<kpi.icon size={16} />}
+                trend={idx % 2 === 0 ? 'up' : 'down'}
+                trendValue={idx % 2 === 0 ? '12%' : '4%'}
+                subtitle="vs last month"
+                delay={idx}
+              />
             </StaggerItem>
           ))}
         </StaggerList>
 
         {/* Charts Grid Row 1 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Chart 1: Monthly Sales Trend */}
+          {/* Chart 1: Revenue vs Target */}
           <div className="card p-6">
-            <h3 className="text-base font-bold text-ink mb-6">Monthly Sales Trend</h3>
-            <div className="h-72" role="img" aria-label="Monthly Sales Trend chart comparing bookings as bar chart and leads as line chart.">
+            <h3 className="text-base font-bold text-ink mb-6 font-display">Revenue vs Target</h3>
+            <div className="h-72" role="img" aria-label="Revenue vs Target chart.">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={salesTrendData} margin={{ top: 20, right: 0, left: -20, bottom: 5 }}>
+                <ComposedChart data={revenueVsTargetData} margin={{ top: 20, right: 0, left: -10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                   <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: 'var(--ink-soft)', fontSize: 11 }} dy={10} />
-                  <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: 'var(--ink-soft)', fontSize: 11 }} domain={[0, 60]} ticks={[0, 15, 30, 45, 60]} />
-                  <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={false} />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: 'var(--ink-soft)', fontSize: 11 }} 
+                    tickFormatter={(val) => `₹${(val / 1000000).toFixed(0)}M`}
+                  />
                   <Tooltip 
                     contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--ink)', borderRadius: '8px' }}
                     cursor={{ fill: 'var(--bg-hover)' }}
+                    formatter={(value: any) => [`₹${value.toLocaleString('en-IN')}`, '']}
                   />
                   <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }} iconType="square" />
-                  <Bar yAxisId="left" dataKey="bookings" name="Bookings" fill="var(--accent)" maxBarSize={40} radius={[4, 4, 0, 0]} />
-                  <Line yAxisId="right" type="linear" dataKey="leads" name="Leads" stroke="var(--success)" strokeWidth={2} dot={false} />
+                  <Bar dataKey="actual" name="Actual Revenue" fill="var(--accent)" maxBarSize={40} radius={[4, 4, 0, 0]} />
+                  <Line type="monotone" dataKey="target" name="Target Revenue" stroke="var(--gold)" strokeWidth={2} strokeDasharray="5 5" dot={true} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
@@ -207,8 +268,8 @@ export default function CEODashboard() {
 
           {/* Chart 2: Lead Source Distribution */}
           <div className="card p-6">
-            <h3 className="text-base font-bold text-ink mb-6">Lead Source Distribution</h3>
-            <div className="h-72" role="img" aria-label="Pie chart illustrating distribution of lead sources: Whatsapp, Reference, Walk-in, Portal, Facebook, Google and Others.">
+            <h3 className="text-base font-bold text-ink mb-6 font-display">Lead Source Distribution</h3>
+            <div className="h-72" role="img" aria-label="Pie chart illustrating distribution of lead sources.">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -239,8 +300,8 @@ export default function CEODashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Chart 3: Lead Status Breakdown */}
           <div className="card p-6">
-            <h3 className="text-base font-bold text-ink mb-6">Lead Status Breakdown</h3>
-            <div className="h-64" role="img" aria-label="Horizontal bar chart illustrating lead status counts from New to Lost.">
+            <h3 className="text-base font-bold text-ink mb-6 font-display">Lead Status Breakdown</h3>
+            <div className="h-64" role="img" aria-label="Lead status counts.">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart layout="vertical" data={leadStatusData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border-color)" />
@@ -255,8 +316,8 @@ export default function CEODashboard() {
 
           {/* Chart 4: Monthly Loan Disbursements */}
           <div className="card p-6">
-            <h3 className="text-base font-bold text-ink mb-6">Monthly Loan Disbursements</h3>
-            <div className="h-64" role="img" aria-label="Area chart showing monthly loan disbursements amounts from January to June.">
+            <h3 className="text-base font-bold text-ink mb-6 font-display">Monthly Loan Disbursements</h3>
+            <div className="h-64" role="img" aria-label="Monthly loan disbursements.">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={loanDisbursementsData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
                   <defs>
@@ -276,75 +337,42 @@ export default function CEODashboard() {
           </div>
         </div>
 
-        {/* Branch Performance Table */}
-        <div className="card overflow-hidden">
-          <div className="p-6 border-b border-border-color">
-            <h3 className="text-base font-bold text-ink">Branch Performance</h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-bg-surface text-ink-soft font-medium">
-                <tr>
-                  <th className="px-6 py-4">Branch</th>
-                  <th className="px-6 py-4">Leads</th>
-                  <th className="px-6 py-4">Bookings</th>
-                  <th className="px-6 py-4">Revenue</th>
-                  <th className="px-6 py-4">Loan Files</th>
-                  <th className="px-6 py-4">Conversion</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-color">
-                {branchPerformanceData.map((row, idx) => {
-                  let conversionColor = 'badge-warning'
-                  if (row.conversion > 20) conversionColor = 'badge-success'
-
-                  return (
-                    <tr key={idx} className="hover:bg-bg-hover transition-colors">
-                      <td className="px-6 py-4">
-                        <p className="font-semibold text-ink">{row.branch}</p>
-                        <p className="text-xs text-ink-muted mt-0.5">{row.branchSub}</p>
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-ink-soft">
-                        <CountUp value={row.leads} />
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-ink-soft">
-                        <CountUp value={row.bookings} />
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-ink-soft">
-                        <CountUp value={row.revenue} prefix="₹" />
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-ink-soft">
-                        <CountUp value={row.loanFiles} />
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`badge ${conversionColor}`}>
-                          {row.conversion}%
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Loan Pipeline Summary */}
-        <div className="card overflow-hidden mb-6">
-          <div className="p-6 border-b border-border-color">
-            <h3 className="text-base font-bold text-ink">Loan Pipeline Summary</h3>
-          </div>
-          <div className="p-6 overflow-x-auto">
-            <div className="flex items-center gap-3 min-w-max pb-2">
-              {loanPipelineData.map((item, idx) => (
-                <div key={idx} className="flex-1 min-w-[120px] rounded-lg border p-3 text-center" style={{ borderColor: item.border, background: 'var(--bg-card)' }}>
-                  <h3 className="text-2xl font-bold" style={{ color: item.color }}>
-                    <CountUp value={item.value} />
-                  </h3>
-                  <p className="text-xs font-semibold mt-1" style={{ color: item.color }}>{item.label}</p>
-                </div>
-              ))}
+        {/* Bottom Row Layout */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2 space-y-6">
+            {/* Branch Performance Section */}
+            <div className="space-y-3">
+              <h3 className="text-base font-bold text-ink font-display">Branch Performance</h3>
+              <DataTable
+                columns={branchColumns}
+                data={branchPerformanceData}
+                searchPlaceholder="Search branches..."
+                searchKey="branch"
+              />
             </div>
+
+            {/* Loan Pipeline Summary */}
+            <div className="card overflow-hidden">
+              <div className="p-6 border-b border-border-color">
+                <h3 className="text-base font-bold text-ink font-display">Loan Pipeline Summary</h3>
+              </div>
+              <div className="p-6 overflow-x-auto">
+                <div className="flex items-center gap-3 min-w-max pb-2">
+                  {loanPipelineData.map((item, idx) => (
+                    <div key={idx} className="flex-1 min-w-[120px] rounded-lg border p-3 text-center" style={{ borderColor: item.border, background: 'var(--bg-card)' }}>
+                      <h3 className="text-2xl font-bold font-mono" style={{ color: item.color }}>
+                        <CountUp value={item.value} />
+                      </h3>
+                      <p className="text-[10px] font-bold uppercase tracking-wider mt-1" style={{ color: item.color }}>{item.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <ActivityTimeline events={activityEvents} />
           </div>
         </div>
       </div>

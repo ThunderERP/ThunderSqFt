@@ -13,10 +13,10 @@ import { Download } from 'lucide-react'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { toast } from 'sonner'
-import PageHeader from '../components/PageHeader'
-import StatCard from '../components/StatCard'
-import ScrollRevealComponent from '../components/ScrollReveal'
-import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../components/MotionComponents'
+import PageHeader from '../../shared/components/PageHeader'
+import StatCard from '../../shared/components/StatCard'
+import ScrollRevealComponent from '../../shared/components/ScrollReveal'
+import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../../shared/components/MotionComponents'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
@@ -196,8 +196,8 @@ export default function Reports() {
         actions={
           <button
             onClick={handleExportReports}
-            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl font-medium text-sm shadow-lg transition-all"
-            style={{ background: '#2563EB', boxShadow: '0 8px 24px rgba(37,99,235,0.25)' }}
+            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl font-medium text-sm shadow-lg transition-all bg-[var(--accent)] hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+            style={{ boxShadow: '0 8px 24px rgba(61,127,255,0.25)' }}
           >
             <Download size={18} />
             Export Reports
@@ -208,27 +208,27 @@ export default function Reports() {
       {/* KPI Cards */}
       <StaggerContainer className="bento-grid mb-8" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
         <StaggerItem><StatCard label="YTD Revenue" value="₹328,000" subtitle="↗ +15.3% vs last year" /></StaggerItem>
-        <StaggerItem><StatCard label="YTD Profit" value="₹113,000" subtitle="↗ +22.8% vs last year" valueColor="text-emerald-600" /></StaggerItem>
-        <StaggerItem><StatCard label="Profit Margin" value="34.5%" subtitle="↗ +2.1% vs last year" /></StaggerItem>
+        <StaggerItem><StatCard label="YTD Profit" value="₹113,000" subtitle="↗ +22.8% vs last year" valueColor="text-[var(--success)]" /></StaggerItem>
+        <StaggerItem><StatCard label="Profit Margin" value="34.5%" subtitle="↗ +2.1% vs last year" valueColor="text-[var(--accent)]" /></StaggerItem>
       </StaggerContainer>
 
       {/* Tabs */}
       <ScrollRevealMotion delay={0.05}>
-      <div className="neu-card mb-8">
-        <div className="flex border-b border-gray-100">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--ink)] shadow-card rounded-lg mb-8">
+        <div className="flex border-b border-[var(--border-color)]">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-all relative ${
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-all relative focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${
                 activeTab === tab
-                  ? 'text-primary-500'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-[var(--accent)]'
+                  : 'text-[var(--ink-soft)] hover:text-[var(--ink)]'
               }`}
             >
               {tab}
               {activeTab === tab && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500 rounded-full" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--accent)] to-[var(--gold)] rounded-full" />
               )}
             </button>
           ))}
@@ -236,8 +236,8 @@ export default function Reports() {
 
         {/* Chart */}
         <div className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900">{chartTitles[activeTab].title}</h2>
-          <p className="text-sm text-gray-400 mb-6">{chartTitles[activeTab].subtitle}</p>
+          <h2 className="text-lg font-semibold text-[var(--ink)] font-display">{chartTitles[activeTab].title}</h2>
+          <p className="text-sm text-[var(--ink-soft)] mb-6">{chartTitles[activeTab].subtitle}</p>
           <div className="h-[380px]">
             <Bar
               data={allChartData[activeTab]}
@@ -254,12 +254,12 @@ export default function Reports() {
                       pointStyle: 'circle',
                       boxWidth: 8,
                       font: { family: 'Inter', size: 12 },
-                      color: '#64748B',
+                      color: '#A5A6BE',
                       padding: 16,
                     },
                   },
                   tooltip: {
-                    backgroundColor: '#1E293B',
+                    backgroundColor: '#1E1E2C',
                     titleFont: { family: 'Inter', size: 13 },
                     bodyFont: { family: 'Inter', size: 12 },
                     padding: 12,
@@ -274,13 +274,13 @@ export default function Reports() {
                 scales: {
                   x: {
                     grid: { display: false },
-                    ticks: { font: { family: 'Inter', size: 12 }, color: '#94A3B8' },
+                    ticks: { font: { family: 'Inter', size: 12 }, color: 'rgba(243, 244, 250, 0.5)' },
                   },
                   y: {
-                    grid: { color: '#F1F5F9' },
+                    grid: { color: 'rgba(255, 255, 255, 0.06)' },
                     ticks: {
                       font: { family: 'Inter', size: 12 },
-                      color: '#94A3B8',
+                      color: 'rgba(243, 244, 250, 0.5)',
                       callback: function (value: any) {
                         return `₹${(value / 1000).toFixed(0)}k`
                       },
@@ -296,30 +296,30 @@ export default function Reports() {
 
       {/* Monthly Summary Table */}
       <ScrollRevealMotion delay={0.1}>
-      <div className="neu-card overflow-hidden">
-        <div className="p-6 border-b border-gray-50">
-          <h2 className="text-lg font-semibold text-gray-900">Monthly Summary</h2>
-          <p className="text-sm text-gray-400">Revenue, expenses, and profit by month</p>
+      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--ink)] shadow-card rounded-lg overflow-hidden">
+        <div className="p-6 border-b border-[var(--border-color)]">
+          <h2 className="text-lg font-semibold text-[var(--ink)] font-display">Monthly Summary</h2>
+          <p className="text-sm text-[var(--ink-soft)]">Revenue, expenses, and profit by month</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Month</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Revenue</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Expenses</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Profit</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Margin</th>
+              <tr className="border-b border-[var(--border-color)]">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Month</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Revenue</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Expenses</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Profit</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Margin</th>
               </tr>
             </thead>
             <tbody>
               {monthlySummary.map((row) => (
-                <tr key={row.month} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{row.month}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">₹{row.revenue.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">₹{row.expenses.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-emerald-600">₹{row.profit.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{((row.profit / row.revenue) * 100).toFixed(1)}%</td>
+                <tr key={row.month} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-hover)] transition-colors">
+                  <td className="px-6 py-4 text-sm font-medium text-[var(--ink)]">{row.month}</td>
+                  <td className="px-6 py-4 text-sm font-mono text-[var(--ink-soft)]">₹{row.revenue.toLocaleString('en-IN')}</td>
+                  <td className="px-6 py-4 text-sm font-mono text-[var(--ink-soft)]">₹{row.expenses.toLocaleString('en-IN')}</td>
+                  <td className="px-6 py-4 text-sm font-mono font-semibold text-[var(--success)]">₹{row.profit.toLocaleString('en-IN')}</td>
+                  <td className="px-6 py-4 text-sm font-mono text-[var(--ink-soft)]">{((row.profit / row.revenue) * 100).toFixed(1)}%</td>
                 </tr>
               ))}
             </tbody>

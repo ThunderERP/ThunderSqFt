@@ -1,5 +1,5 @@
-import { LoanStage, getLoanHealth } from '../types/loanFile'
-import { getPulseColor } from '../../shared/utils/statusColor'
+import { LoanStage } from '../types/loanFile'
+import StatusBadge from '../../shared/components/StatusBadge'
 
 interface LoanStageStepperProps {
   stage: LoanStage
@@ -20,25 +20,16 @@ const STAGES: LoanStage[] = [
 export default function LoanStageStepper({ stage }: LoanStageStepperProps) {
   const currentIdx = STAGES.indexOf(stage)
 
-  // Get current stage's health color mapping
-  const currentHealth = getLoanHealth(stage)
-  const currentColors = getPulseColor(currentHealth)
-
   return (
-    <div className="w-full neu-card p-6 bg-white my-6 overflow-x-auto">
+    <div className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] p-6 my-6 rounded-lg shadow-card overflow-x-auto text-[var(--ink)]">
       <div className="min-w-[800px] py-2">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">Loan Processing Pipeline</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)] font-display">Loan Processing Pipeline</h4>
           </div>
-          <div 
-            className="text-xs font-bold px-3 py-1 rounded"
-            style={{
-              color: currentColors.color,
-              backgroundColor: currentColors.bg,
-            }}
-          >
-            Current Stage: {stage}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[var(--ink-soft)]">Current Stage:</span>
+            <StatusBadge status={stage} />
           </div>
         </div>
 
@@ -47,17 +38,16 @@ export default function LoanStageStepper({ stage }: LoanStageStepperProps) {
           {STAGES.map((step, idx) => {
             const isCompleted = idx < currentIdx
             const isCurrent = stage === step
-            const isFuture = idx > currentIdx
 
-            let circleBg = 'transparent'
-            let circleBorder = '1px solid var(--hairline)'
+            let circleBg = 'var(--bg-surface)'
+            let circleBorder = '1px solid var(--border-color)'
             let circleTextColor = 'var(--ink-soft)'
             let labelWeightClass = 'font-normal text-[var(--ink-soft)]'
             let labelColor = undefined
 
             if (isCompleted) {
-              circleBg = 'var(--status-good)'
-              circleBorder = '1px solid var(--status-good)'
+              circleBg = 'var(--success)'
+              circleBorder = '1px solid var(--success)'
               circleTextColor = '#FFFFFF'
               labelWeightClass = 'font-semibold text-[var(--ink)]'
             } else if (isCurrent) {
@@ -75,7 +65,7 @@ export default function LoanStageStepper({ stage }: LoanStageStepperProps) {
                   <div 
                     className="absolute left-[50%] top-[14px] right-[-50%] h-0.5 z-0"
                     style={{
-                      backgroundColor: isCompleted ? 'var(--status-good)' : 'var(--hairline)'
+                      backgroundColor: isCompleted ? 'var(--success)' : 'var(--border-color)'
                     }}
                   />
                 )}
@@ -83,7 +73,7 @@ export default function LoanStageStepper({ stage }: LoanStageStepperProps) {
                 {/* Circle */}
                 <div className="relative z-10 flex items-center justify-center">
                   <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 font-mono"
                     style={{
                       background: circleBg,
                       border: circleBorder,

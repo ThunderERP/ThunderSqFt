@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { PageTransition } from '../../shared/components/MotionComponents'
+import PageHeader from '../../shared/components/PageHeader'
+import StatusBadge from '../../shared/components/StatusBadge'
 import { User, Sun, Moon, Shield, Bell, Smartphone, Layout, Key, LogOut } from 'lucide-react'
 import { useAuth } from '../../auth/context/AuthContext'
 import { useRole } from '../../../context/RoleContext'
@@ -37,70 +39,70 @@ export default function Preferences() {
 
   return (
     <PageTransition>
-      <div className="p-6 max-w-4xl space-y-6">
+      <div className="p-6 max-w-4xl space-y-6 text-[var(--ink)]">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage your account and preferences</p>
-        </div>
+        <PageHeader 
+          title="Settings"
+          subtitle="Manage your account and preferences"
+        />
 
         <div className="space-y-6">
           {/* Profile Card */}
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6">
-            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <User size={18} className="text-gray-400" /> Profile
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl shadow-card p-6">
+            <h3 className="text-base font-bold text-[var(--ink)] flex items-center gap-2 font-display uppercase tracking-wider">
+              <User size={18} className="text-[var(--ink-muted)]" /> Profile
             </h3>
-            <p className="text-sm text-gray-500 mt-1 mb-6">Your account information</p>
+            <p className="text-sm text-[var(--ink-soft)] mt-1 mb-6">Your account information</p>
 
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-2xl">
+              <div className="w-16 h-16 rounded-full bg-[var(--accent-soft)] flex items-center justify-center text-[var(--accent)] border border-[var(--accent)]/15 font-bold text-2xl font-mono">
                 {initials}
               </div>
               <div>
-                <h4 className="text-lg font-bold text-gray-900 leading-tight">{currentUser.name}</h4>
-                <p className="text-sm text-blue-600">{email}</p>
-                <span className="inline-block mt-2 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-semibold">
-                  {getRoleLabel(currentUser.role)}
-                </span>
+                <h4 className="text-lg font-bold text-[var(--ink)] leading-tight font-display">{currentUser.name}</h4>
+                <p className="text-sm text-[var(--accent)] font-mono mt-1">{email}</p>
+                <div className="mt-2.5">
+                  <StatusBadge status={getRoleLabel(currentUser.role)} />
+                </div>
               </div>
             </div>
 
-            <hr className="border-gray-100 my-6" />
+            <hr className="border-[var(--border-color)] my-6" />
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500">Role</p>
-                <p className="text-sm font-semibold text-gray-900">{getRoleLabel(currentUser.role)}</p>
+                <p className="text-sm text-[var(--ink-soft)]">Role</p>
+                <p className="text-sm font-semibold text-[var(--ink)]">{getRoleLabel(currentUser.role)}</p>
               </div>
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500">Email</p>
-                <p className="text-sm font-semibold text-gray-900">{email}</p>
+                <p className="text-sm text-[var(--ink-soft)]">Email</p>
+                <p className="text-sm font-semibold text-[var(--ink)] font-mono">{email}</p>
               </div>
             </div>
           </div>
 
           {/* Appearance Card */}
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6">
-            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <Sun size={18} className="text-gray-400" /> Appearance
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl shadow-card p-6">
+            <h3 className="text-base font-bold text-[var(--ink)] flex items-center gap-2 font-display uppercase tracking-wider">
+              <Sun size={18} className="text-[var(--ink-muted)]" /> Appearance
             </h3>
-            <p className="text-sm text-gray-500 mt-1 mb-6">Customize how PropFlow CRM looks</p>
+            <p className="text-sm text-[var(--ink-soft)] mt-1 mb-6">Customize how PropFlow CRM looks</p>
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-gray-900">Theme</p>
-                <p className="text-sm text-gray-500">Currently using {theme} mode</p>
+                <p className="text-sm font-semibold text-[var(--ink)]">Theme</p>
+                <p className="text-sm text-[var(--ink-soft)]">Currently using {theme} mode</p>
               </div>
-              <div className="flex items-center bg-gray-50 p-1 rounded-lg border border-gray-200">
+              <div className="flex items-center bg-[var(--bg-surface)] p-1 rounded-lg border border-[var(--border-color)]">
                 <button
                   onClick={() => setTheme('light')}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${theme === 'light' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${theme === 'light' ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-[var(--ink-soft)] hover:text-[var(--ink)]'}`}
                 >
                   <Sun size={16} /> Light
                 </button>
                 <button
                   onClick={() => setTheme('dark')}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${theme === 'dark' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${theme === 'dark' ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-[var(--ink-soft)] hover:text-[var(--ink)]'}`}
                 >
                   <Moon size={16} /> Dark
                 </button>
@@ -109,70 +111,70 @@ export default function Preferences() {
           </div>
 
           {/* Permissions Card */}
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6">
-            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <Shield size={18} className="text-gray-400" /> Permissions
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl shadow-card p-6">
+            <h3 className="text-base font-bold text-[var(--ink)] flex items-center gap-2 font-display uppercase tracking-wider">
+              <Shield size={18} className="text-[var(--ink-muted)]" /> Permissions
             </h3>
-            <p className="text-sm text-gray-500 mt-1 mb-6">What you can access based on your role</p>
+            <p className="text-sm text-[var(--ink-soft)] mt-1 mb-6">What you can access based on your role</p>
 
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-100 text-emerald-700 min-w-[80px] text-center">
-                  Full Access
-                </span>
-                <span className="text-sm text-gray-600">All modules, all branches, CEO dashboard</span>
+                <div className="min-w-[110px] text-center">
+                  <StatusBadge status="Full Access" />
+                </div>
+                <span className="text-sm text-[var(--ink-soft)]">All modules, all branches, CEO dashboard</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-100 text-blue-700 min-w-[80px] text-center">
-                  Reports
-                </span>
-                <span className="text-sm text-gray-600">Branch comparison, analytics, trends</span>
+                <div className="min-w-[110px] text-center">
+                  <StatusBadge status="Reports" />
+                </div>
+                <span className="text-sm text-[var(--ink-soft)]">Branch comparison, analytics, trends</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-purple-100 text-purple-700 min-w-[80px] text-center">
-                  HR
-                </span>
-                <span className="text-sm text-gray-600">Employee management and leaderboard</span>
+                <div className="min-w-[110px] text-center">
+                  <StatusBadge status="HR" />
+                </div>
+                <span className="text-sm text-[var(--ink-soft)]">Employee management and leaderboard</span>
               </div>
             </div>
           </div>
 
           {/* Notifications Card */}
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6">
-            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <Bell size={18} className="text-gray-400" /> Notifications
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl shadow-card p-6">
+            <h3 className="text-base font-bold text-[var(--ink)] flex items-center gap-2 font-display uppercase tracking-wider">
+              <Bell size={18} className="text-[var(--ink-muted)]" /> Notifications
             </h3>
             
             <div className="mt-6 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-700">Missed follow-up alerts</span>
+                <span className="text-sm font-semibold text-[var(--ink-soft)]">Missed follow-up alerts</span>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={notifications.missedFollowUps} onChange={() => handleToggle('missedFollowUps')} />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2563EB]"></div>
+                  <div className="w-11 h-6 bg-[var(--bg-surface)] border border-[var(--border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-color)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
                 </label>
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-700">New lead assignments</span>
+                <span className="text-sm font-semibold text-[var(--ink-soft)]">New lead assignments</span>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={notifications.newLeads} onChange={() => handleToggle('newLeads')} />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2563EB]"></div>
+                  <div className="w-11 h-6 bg-[var(--bg-surface)] border border-[var(--border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-color)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
                 </label>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-700">Booking confirmations</span>
+                <span className="text-sm font-semibold text-[var(--ink-soft)]">Booking confirmations</span>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={notifications.bookingConfirmations} onChange={() => handleToggle('bookingConfirmations')} />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2563EB]"></div>
+                  <div className="w-11 h-6 bg-[var(--bg-surface)] border border-[var(--border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-color)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
                 </label>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-700">Loan status updates</span>
+                <span className="text-sm font-semibold text-[var(--ink-soft)]">Loan status updates</span>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={notifications.loanStatusUpdates} onChange={() => handleToggle('loanStatusUpdates')} />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2563EB]"></div>
+                  <div className="w-11 h-6 bg-[var(--bg-surface)] border border-[var(--border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-color)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
                 </label>
               </div>
             </div>

@@ -1,7 +1,8 @@
 import { PageTransition, StaggerContainer, StaggerItem } from '../../shared/components/MotionComponents'
-import PageHeader from '../../finance/components/PageHeader'
-import DataTable from '../../finance/components/DataTable'
-import StatCard from '../../finance/components/StatCard'
+import PageHeader from '../../shared/components/PageHeader'
+import DataTable from '../../shared/components/DataTable'
+import StatCard from '../../shared/components/StatCard'
+import StatusBadge from '../../shared/components/StatusBadge'
 import { CalendarRange, CheckCircle, Clock, XCircle, Plus } from 'lucide-react'
 
 const mockLeaves = [
@@ -23,31 +24,25 @@ const mockLeaves = [
 
 export default function LeaveManagement() {
   const columns = [
-    { key: 'name', label: 'Employee Name', render: (val: string) => <span className="font-semibold text-gray-900">{val}</span> },
+    { key: 'name', label: 'Employee Name', render: (item: any) => <span className="font-semibold text-[var(--ink)]">{item.name}</span> },
     { key: 'type', label: 'Leave Type' },
-    { key: 'start', label: 'Start Date' },
-    { key: 'end', label: 'End Date' },
-    { key: 'days', label: 'Duration', render: (val: number) => <span>{val} {val === 1 ? 'Day' : 'Days'}</span> },
+    { key: 'start', label: 'Start Date', render: (item: any) => <span className="font-mono text-xs">{item.start}</span> },
+    { key: 'end', label: 'End Date', render: (item: any) => <span className="font-mono text-xs">{item.end}</span> },
+    { key: 'days', label: 'Duration', render: (item: any) => <span className="font-mono">{item.days} {item.days === 1 ? 'Day' : 'Days'}</span> },
     { 
       key: 'status', 
       label: 'Status',
-      render: (val: string) => {
-        let colors = 'bg-gray-100 text-gray-800 border-gray-200'
-        if (val === 'Approved') colors = 'bg-emerald-100 text-emerald-800 border-emerald-200'
-        if (val === 'Rejected') colors = 'bg-red-100 text-red-800 border-red-200'
-        if (val === 'Pending') colors = 'bg-amber-100 text-amber-800 border-amber-200'
-        return <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${colors}`}>{val}</span>
-      }
+      render: (item: any) => <StatusBadge status={item.status} />
     },
     {
       key: 'actions',
       label: 'Actions',
-      render: (_: any, row: any) => row.status === 'Pending' ? (
+      render: (item: any) => item.status === 'Pending' ? (
         <div className="flex items-center gap-2">
-          <button className="text-emerald-600 hover:text-white hover:bg-emerald-600 font-semibold text-xs px-2.5 py-1.5 bg-emerald-50 rounded border border-emerald-200 transition-all active:scale-[0.96]">Approve</button>
-          <button className="text-red-600 hover:text-white hover:bg-red-600 font-semibold text-xs px-2.5 py-1.5 bg-red-50 rounded border border-red-200 transition-all active:scale-[0.96]">Reject</button>
+          <button className="text-emerald-400 hover:text-white hover:bg-emerald-600 font-semibold text-xs px-2.5 py-1 bg-emerald-600/10 rounded border border-emerald-500/20 transition-all active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]">Approve</button>
+          <button className="text-red-400 hover:text-white hover:bg-red-600 font-semibold text-xs px-2.5 py-1 bg-red-600/10 rounded border border-red-500/20 transition-all active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]">Reject</button>
         </div>
-      ) : <span className="text-gray-400 text-xs font-medium">Resolved</span>
+      ) : <span className="text-[var(--ink-muted)] text-xs font-medium font-mono">Resolved</span>
     }
   ]
 
@@ -63,12 +58,12 @@ export default function LeaveManagement() {
 
   return (
     <PageTransition>
-      <div className="space-y-6 p-6 max-w-[1600px] mx-auto">
+      <div className="space-y-6 p-6 max-w-[1600px] mx-auto text-[var(--ink)]">
         <PageHeader 
           title="Leave Management" 
           subtitle="Manage employee time off and leave requests."
           actions={
-            <button className="bg-[#2563EB] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2 active:scale-[0.97]">
+            <button className="bg-[var(--accent)] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-sm flex items-center gap-2 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">
               <Plus size={16} /> Request Leave
             </button>
           }
@@ -76,22 +71,22 @@ export default function LeaveManagement() {
 
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StaggerItem>
-            <StatCard title="Total Requests" value={String(totalRequests)} subtitle="All requests" icon={<CalendarRange size={20} />} trend="neutral" trendValue="0%" />
+            <StatCard label="Total Requests" value={String(totalRequests)} subtitle="All requests" valueColor="text-[var(--accent)]" />
           </StaggerItem>
           <StaggerItem>
-            <StatCard title="Pending" value={String(pendingCount)} subtitle="Action required" icon={<Clock size={20} />} trend={pendingCount > 0 ? "up" : "neutral"} trendValue={String(pendingCount)} />
+            <StatCard label="Pending" value={String(pendingCount)} subtitle="Action required" valueColor="text-[var(--warning)]" />
           </StaggerItem>
           <StaggerItem>
-            <StatCard title="Approved" value={String(approvedCount)} subtitle="Granted time off" icon={<CheckCircle size={20} />} trend="up" trendValue={`${Math.round((approvedCount/totalRequests)*100)}%`} />
+            <StatCard label="Approved" value={String(approvedCount)} subtitle="Granted time off" valueColor="text-[var(--success)]" />
           </StaggerItem>
           <StaggerItem>
-            <StatCard title="Rejected" value={String(rejectedCount)} subtitle="Declined requests" icon={<XCircle size={20} />} trend="down" trendValue={`${Math.round((rejectedCount/totalRequests)*100)}%`} />
+            <StatCard label="Rejected" value={String(rejectedCount)} subtitle="Declined requests" valueColor="text-[var(--danger)]" />
           </StaggerItem>
         </StaggerContainer>
 
-        <div className="platform-card overflow-hidden">
-          <div className="p-4 border-b border-gray-100 bg-white">
-            <h3 className="text-lg font-bold text-gray-800">Recent Leave Requests</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-[var(--ink)] font-display">Recent Leave Requests</h3>
           </div>
           <DataTable 
             columns={columns} 

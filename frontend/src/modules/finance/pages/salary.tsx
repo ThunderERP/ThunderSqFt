@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Eye, Edit, UserPlus, IndianRupee } from 'lucide-react'
 import { toast } from 'sonner'
-import PageHeader from '../components/PageHeader'
-import StatCard from '../components/StatCard'
-import DataTable from '../components/DataTable'
-import StatusBadge from '../components/StatusBadge'
-import Modal from '../components/Modal'
-import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../components/MotionComponents'
+import PageHeader from '../../shared/components/PageHeader'
+import StatCard from '../../shared/components/StatCard'
+import DataTable from '../../shared/components/DataTable'
+import StatusBadge from '../../shared/components/StatusBadge'
+import Modal from '../../shared/components/Modal'
+import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../../shared/components/MotionComponents'
 
 interface Employee {
   id: number;
@@ -187,20 +187,20 @@ export default function Salary() {
   }
 
   const columns = [
-    { key: 'employeeId', label: 'Employee ID', render: (item: any) => <span className="font-medium text-gray-900">{item.employeeId}</span> },
-    { key: 'name', label: 'Employee Name', render: (item: any) => <span className="font-medium">{item.name}</span> },
+    { key: 'employeeId', label: 'Employee ID', render: (item: any) => <span className="font-mono font-medium text-[var(--accent)]">{item.employeeId}</span> },
+    { key: 'name', label: 'Employee Name', render: (item: any) => <span className="font-medium text-[var(--ink)]">{item.name}</span> },
     {
       key: 'department',
       label: 'Department',
       render: (item: any) => <StatusBadge status={item.department} />,
     },
-    { key: 'basicSalary', label: 'Basic Salary', render: (item: any) => `₹${Number(item.basicSalary).toLocaleString()}` },
-    { key: 'allowances', label: 'Allowances', render: (item: any) => <span className="text-emerald-600">+₹{Number(item.allowances).toLocaleString()}</span> },
-    { key: 'deductions', label: 'Deductions', render: (item: any) => <span className="text-red-500">-₹{Number(item.deductions).toLocaleString()}</span> },
+    { key: 'basicSalary', label: 'Basic Salary', render: (item: any) => <span className="font-mono text-[var(--ink)]">₹{Number(item.basicSalary).toLocaleString('en-IN')}</span> },
+    { key: 'allowances', label: 'Allowances', render: (item: any) => <span className="font-mono text-[var(--success)]">+₹{Number(item.allowances).toLocaleString('en-IN')}</span> },
+    { key: 'deductions', label: 'Deductions', render: (item: any) => <span className="font-mono text-[var(--danger)]">-₹{Number(item.deductions).toLocaleString('en-IN')}</span> },
     {
       key: 'net', label: 'Net Salary', render: (item: any) => {
         const net = Number(item.basicSalary) + Number(item.allowances) - Number(item.deductions)
-        return <span className="font-semibold text-gray-900">₹{net.toLocaleString()}</span>
+        return <span className="font-mono font-bold text-[var(--gold)]">₹{net.toLocaleString('en-IN')}</span>
       }
     },
     {
@@ -213,13 +213,13 @@ export default function Salary() {
               setSelectedEmployee(item)
               setIsViewModalOpen(true)
             }}
-            className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-primary-500 transition-colors"
+            className="p-2 rounded-lg hover:bg-[var(--bg-hover)] text-[var(--ink-muted)] hover:text-[var(--accent)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
           >
             <Eye size={16} />
           </button>
           <button
             onClick={() => handleEditClick(item)}
-            className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-primary-500 transition-colors"
+            className="p-2 rounded-lg hover:bg-[var(--bg-hover)] text-[var(--ink-muted)] hover:text-[var(--accent)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
           >
             <Edit size={16} />
           </button>
@@ -238,8 +238,8 @@ export default function Salary() {
           <>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl font-medium text-sm shadow-lg transition-all"
-              style={{ background: '#2563EB', boxShadow: '0 8px 24px rgba(37,99,235,0.25)' }}
+              className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl font-medium text-sm shadow-lg transition-all bg-[var(--accent)] hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+              style={{ boxShadow: '0 8px 24px rgba(61,127,255,0.25)' }}
             >
               <UserPlus size={18} />
               Add Employee
@@ -247,7 +247,7 @@ export default function Salary() {
             <button
               disabled={loading}
               onClick={handleProcessSalary}
-              className={`flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-xl font-medium text-sm hover:bg-gray-800 transition-all ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`flex items-center gap-2 px-5 py-2.5 bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--ink)] rounded-xl font-medium text-sm hover:bg-[var(--bg-hover)] transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <IndianRupee size={18} />
               {loading ? 'Processing...' : 'Process Salary'}
@@ -259,9 +259,9 @@ export default function Salary() {
       {/* KPI Cards */}
       <StaggerContainer className="bento-grid mb-8">
         <StaggerItem><StatCard label="Total Basic Salary" value={`₹${stats.basic.toLocaleString()}`} /></StaggerItem>
-        <StaggerItem><StatCard label="Total Allowances" value={`+₹${stats.allowances.toLocaleString()}`} valueColor="text-emerald-600" /></StaggerItem>
-        <StaggerItem><StatCard label="Total Deductions" value={`-₹${stats.deductions.toLocaleString()}`} valueColor="text-red-500" /></StaggerItem>
-        <StaggerItem><StatCard label="Total Net Salary" value={`₹${stats.net.toLocaleString()}`} valueColor="text-primary-500" /></StaggerItem>
+        <StaggerItem><StatCard label="Total Allowances" value={`+₹${stats.allowances.toLocaleString()}`} valueColor="text-[var(--success)]" /></StaggerItem>
+        <StaggerItem><StatCard label="Total Deductions" value={`-₹${stats.deductions.toLocaleString()}`} valueColor="text-[var(--danger)]" /></StaggerItem>
+        <StaggerItem><StatCard label="Total Net Salary" value={`₹${stats.net.toLocaleString()}`} valueColor="text-[var(--accent)]" /></StaggerItem>
       </StaggerContainer>
 
       {/* Data Table */}
@@ -284,20 +284,20 @@ export default function Salary() {
       >
         <form onSubmit={handleAddEmployee} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <label className="block text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider mb-1.5">Full Name</label>
             <input
               required
               type="text"
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+              className="w-full px-4 py-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none transition-all"
               placeholder="e.g. John Doe"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+            <label className="block text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider mb-1.5">Department</label>
             <select
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+              className="w-full px-4 py-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none transition-all"
               value={formData.department}
               onChange={(e) => setFormData({ ...formData, department: e.target.value })}
             >
@@ -311,21 +311,21 @@ export default function Salary() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Basic Salary</label>
+              <label className="block text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider mb-1.5">Basic Salary</label>
               <input
                 required
                 type="number"
-                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                className="w-full px-4 py-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none transition-all font-mono"
                 placeholder="0.00"
                 value={formData.basic}
                 onChange={(e) => setFormData({ ...formData, basic: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Allowances</label>
+              <label className="block text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider mb-1.5">Allowances</label>
               <input
                 type="number"
-                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                className="w-full px-4 py-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none transition-all font-mono"
                 placeholder="0.00"
                 value={formData.allowances}
                 onChange={(e) => setFormData({ ...formData, allowances: e.target.value })}
@@ -333,10 +333,10 @@ export default function Salary() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Deductions</label>
+            <label className="block text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider mb-1.5">Deductions</label>
             <input
               type="number"
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+              className="w-full px-4 py-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none transition-all font-mono"
               placeholder="0.00"
               value={formData.deductions}
               onChange={(e) => setFormData({ ...formData, deductions: e.target.value })}
@@ -346,13 +346,13 @@ export default function Salary() {
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+              className="px-4 py-2 text-sm font-medium text-[var(--ink-soft)] hover:bg-[var(--bg-hover)] rounded-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-xl transition-all shadow-lg shadow-primary-500/25"
+              className="px-4 py-2 text-sm font-medium text-white bg-[var(--accent)] hover:bg-blue-600 rounded-xl transition-all shadow-lg shadow-blue-500/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
             >
               Add Employee
             </button>
@@ -368,20 +368,20 @@ export default function Salary() {
       >
         <form onSubmit={handleUpdateEmployee} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <label className="block text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider mb-1.5">Full Name</label>
             <input
               required
               type="text"
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+              className="w-full px-4 py-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none transition-all"
               placeholder="e.g. John Doe"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+            <label className="block text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider mb-1.5">Department</label>
             <select
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+              className="w-full px-4 py-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none transition-all"
               value={formData.department}
               onChange={(e) => setFormData({ ...formData, department: e.target.value })}
             >
@@ -395,21 +395,21 @@ export default function Salary() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Basic Salary</label>
+              <label className="block text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider mb-1.5">Basic Salary</label>
               <input
                 required
                 type="number"
-                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                className="w-full px-4 py-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none transition-all font-mono"
                 placeholder="0.00"
                 value={formData.basic}
                 onChange={(e) => setFormData({ ...formData, basic: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Allowances</label>
+              <label className="block text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider mb-1.5">Allowances</label>
               <input
                 type="number"
-                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                className="w-full px-4 py-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none transition-all font-mono"
                 placeholder="0.00"
                 value={formData.allowances}
                 onChange={(e) => setFormData({ ...formData, allowances: e.target.value })}
@@ -417,10 +417,10 @@ export default function Salary() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Deductions</label>
+            <label className="block text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider mb-1.5">Deductions</label>
             <input
               type="number"
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+              className="w-full px-4 py-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none transition-all font-mono"
               placeholder="0.00"
               value={formData.deductions}
               onChange={(e) => setFormData({ ...formData, deductions: e.target.value })}
@@ -430,13 +430,13 @@ export default function Salary() {
             <button
               type="button"
               onClick={() => setIsEditModalOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+              className="px-4 py-2 text-sm font-medium text-[var(--ink-soft)] hover:bg-[var(--bg-hover)] rounded-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-xl transition-all shadow-lg shadow-primary-500/25"
+              className="px-4 py-2 text-sm font-medium text-white bg-[var(--accent)] hover:bg-blue-600 rounded-xl transition-all shadow-lg shadow-blue-500/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
             >
               Update Employee
             </button>
@@ -448,34 +448,34 @@ export default function Salary() {
       <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Employee Details">
         {selectedEmployee && (
           <div className="space-y-4">
-            <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500">Employee ID</span>
-              <span className="font-medium">{selectedEmployee.employeeId}</span>
+            <div className="flex justify-between border-b border-[var(--border-color)] pb-4">
+              <span className="text-[var(--ink-soft)]">Employee ID</span>
+              <span className="font-mono font-medium text-[var(--accent)]">{selectedEmployee.employeeId}</span>
             </div>
-            <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500">Name</span>
-              <span className="font-medium">{selectedEmployee.name}</span>
+            <div className="flex justify-between border-b border-[var(--border-color)] pb-4">
+              <span className="text-[var(--ink-soft)]">Name</span>
+              <span className="font-medium text-[var(--ink)]">{selectedEmployee.name}</span>
             </div>
-            <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500">Department</span>
+            <div className="flex justify-between border-b border-[var(--border-color)] pb-4">
+              <span className="text-[var(--ink-soft)]">Department</span>
               <StatusBadge status={selectedEmployee.department} />
             </div>
-            <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500">Basic Salary</span>
-              <span className="font-medium">₹{Number(selectedEmployee.basicSalary).toLocaleString()}</span>
+            <div className="flex justify-between border-b border-[var(--border-color)] pb-4">
+              <span className="text-[var(--ink-soft)]">Basic Salary</span>
+              <span className="font-mono font-medium text-[var(--ink)]">₹{Number(selectedEmployee.basicSalary).toLocaleString('en-IN')}</span>
             </div>
-            <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500">Allowances</span>
-              <span className="font-medium text-emerald-600">+₹{Number(selectedEmployee.allowances).toLocaleString()}</span>
+            <div className="flex justify-between border-b border-[var(--border-color)] pb-4">
+              <span className="text-[var(--ink-soft)]">Allowances</span>
+              <span className="font-mono font-medium text-[var(--success)]">+₹{Number(selectedEmployee.allowances).toLocaleString('en-IN')}</span>
             </div>
-            <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500">Deductions</span>
-              <span className="font-medium text-red-500">-₹{Number(selectedEmployee.deductions).toLocaleString()}</span>
+            <div className="flex justify-between border-b border-[var(--border-color)] pb-4">
+              <span className="text-[var(--ink-soft)]">Deductions</span>
+              <span className="font-mono font-medium text-[var(--danger)]">-₹{Number(selectedEmployee.deductions).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between pt-2">
-              <span className="text-gray-500 font-medium">Net Salary</span>
-              <span className="font-bold text-lg text-gray-900">
-                ₹{(Number(selectedEmployee.basicSalary) + Number(selectedEmployee.allowances) - Number(selectedEmployee.deductions)).toLocaleString()}
+              <span className="text-[var(--ink)] font-medium">Net Salary</span>
+              <span className="font-mono font-bold text-lg text-[var(--gold)]">
+                ₹{(Number(selectedEmployee.basicSalary) + Number(selectedEmployee.allowances) - Number(selectedEmployee.deductions)).toLocaleString('en-IN')}
               </span>
             </div>
           </div>

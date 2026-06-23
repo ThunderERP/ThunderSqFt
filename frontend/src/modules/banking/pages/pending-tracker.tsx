@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageHeader from '../../shared/components/PageHeader'
 import StatCard from '../../shared/components/StatCard'
-import { StaggerContainer, StaggerItem, PageTransition } from '../../shared/components/MotionComponents'
+import DataTable from '../../shared/components/DataTable'
+import StatusBadge from '../../shared/components/StatusBadge'
+import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../../shared/components/MotionComponents'
 import { useLoanFiles } from '../../../hooks/useLoanFiles'
-import { computePendingCounts, computePendingCountsByEmployee, computePendingCountsByBranch } from '../utils/pendingTracker'
-import { AlertCircle, Landmark, Clock, FileWarning, ShieldAlert, Award, Sparkles } from 'lucide-react'
+import { computePendingCounts } from '../utils/pendingTracker'
+import { employeesDb } from '../../../services/db'
 
 export default function PendingTracker() {
   const navigate = useNavigate()
@@ -26,8 +28,38 @@ export default function PendingTracker() {
 
   // Single source of truth calculation
   const overallCounts = computePendingCounts(loanFiles)
-  const employeeBreakdown = computePendingCountsByEmployee(loanFiles)
-  const branchBreakdown = computePendingCountsByBranch(loanFiles)
+
+  // Map and sort pending files by priority (High/Medium/Low)
+  const pendingFiles = (loanFiles || [])
+    .filter(f => f.stage !== 'Disbursed')
+    .map(f => {
+      const isStuck = f.id === 1; // matching computePendingCounts stuck logic
+      const isMedium = f.stage === 'Doc Pending' || f.stage === 'Credit Query';
+      const priority = isStuck ? 'High' : isMedium ? 'Medium' : 'Low';
+      const priorityValue = isStuck ? 3 : isMedium ? 2 : 1;
+      
+      const employee = employeesDb.find(e => e.name === f.loanCoordinatorId);
+      const branchName = employee?.branchId || 'Mumbai';
+
+      return {
+        ...f,
+        branch: branchName,
+        priority,
+        priorityValue
+      };
+    })
+    .sort((a, b) => b.priorityValue - a.priorityValue);
+
+  const columns = [
+    { key: 'id', label: 'File ID', render: (item: any) => <span className="font-mono font-medium text-[var(--accent)]">#{item.id}</span> },
+    { key: 'customerName', label: 'Customer', render: (item: any) => <span className="font-medium text-[var(--ink)]">{item.customerName}</span> },
+    { key: 'projectName', label: 'Project', render: (item: any) => <span className="text-[var(--ink-soft)]">{item.projectName}</span> },
+    { key: 'loanAmount', label: 'Amount', render: (item: any) => <span className="font-mono font-bold text-[var(--gold)]">₹{item.loanAmount.toLocaleString('en-IN')}</span> },
+    { key: 'stage', label: 'Stage', render: (item: any) => <StatusBadge status={item.stage} /> },
+    { key: 'loanCoordinatorId', label: 'Coordinator', render: (item: any) => <span className="text-[var(--ink-soft)]">{item.loanCoordinatorId}</span> },
+    { key: 'branch', label: 'Branch', render: (item: any) => <span className="text-[var(--ink-soft)]">{item.branch}</span> },
+    { key: 'priority', label: 'Priority', render: (item: any) => <StatusBadge status={item.priority} domain="priority" /> }
+  ]
 
   return (
     <PageTransition>
@@ -43,7 +75,7 @@ export default function PendingTracker() {
             label="Stuck Cases (>7 days)"
             value={overallCounts.stuckCases.toString()}
             subtitle="Requires immediate attention"
-            valueColor="text-[var(--status-stuck)] animate-none"
+            valueColor="text-[var(--danger)] animate-none"
             onClick={() => navigate('/banking/loans', { state: { stageFilter: 'Stuck' } })}
           />
         </StaggerItem>
@@ -52,6 +84,7 @@ export default function PendingTracker() {
             label="PD Pending"
             value={overallCounts.pdPending.toString()}
             subtitle="Personal Discussion checks"
+            valueColor="text-[var(--warning)]"
             onClick={() => navigate('/banking/loans', { state: { stageFilter: 'PD Pending' } })}
           />
         </StaggerItem>
@@ -60,6 +93,7 @@ export default function PendingTracker() {
             label="Documents Pending"
             value={overallCounts.docPending.toString()}
             subtitle="Customer files incomplete"
+            valueColor="text-[var(--warning)]"
             onClick={() => navigate('/banking/loans', { state: { stageFilter: 'Doc Pending' } })}
           />
         </StaggerItem>
@@ -68,6 +102,7 @@ export default function PendingTracker() {
             label="Login Pending"
             value={overallCounts.loginPending.toString()}
             subtitle="Files ready for banking login"
+            valueColor="text-[var(--accent)]"
             onClick={() => navigate('/banking/loans', { state: { stageFilter: 'Login Pending' } })}
           />
         </StaggerItem>
@@ -76,6 +111,7 @@ export default function PendingTracker() {
             label="Sanctions Pending"
             value={overallCounts.sanctionPending.toString()}
             subtitle="Awaiting bank approval"
+            valueColor="text-[var(--success)]"
             onClick={() => navigate('/banking/loans', { state: { stageFilter: 'Sanction Approved' } })}
           />
         </StaggerItem>
@@ -84,6 +120,7 @@ export default function PendingTracker() {
             label="Registrations Pending"
             value={overallCounts.registrationPending.toString()}
             subtitle="Agreement registration checks"
+            valueColor="text-[var(--accent)]"
             onClick={() => navigate('/banking/loans', { state: { stageFilter: 'Reg Pending' } })}
           />
         </StaggerItem>
@@ -92,6 +129,7 @@ export default function PendingTracker() {
             label="Disbursements Pending"
             value={overallCounts.disbursementPending.toString()}
             subtitle="Awaiting banking payouts"
+            valueColor="text-[var(--success)]"
             onClick={() => navigate('/banking/loans', { state: { stageFilter: 'Disb Pending' } })}
           />
         </StaggerItem>
@@ -100,92 +138,27 @@ export default function PendingTracker() {
             label="Ops Efficiency"
             value={loanFiles.length > 0 ? `${Math.round(((loanFiles.length - overallCounts.stuckCases) / loanFiles.length) * 100)}%` : '100%'}
             subtitle="Healthy vs Stuck Loan Files ratio"
+            valueColor="text-[var(--gold)]"
           />
         </StaggerItem>
       </StaggerContainer>
 
-      {/* Breakdowns Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        {/* Breakdown by Branch (Department proxy) */}
+      {/* Stuck / Pending Cases Priority Table */}
+      <ScrollRevealMotion delay={0.1}>
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-[var(--ink)]">Pending Breakdown by Branch</h3>
-          </div>
-          <div className="neu-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-[var(--hairline)] text-left text-[var(--ink-soft)] uppercase tracking-wider font-semibold">
-                    <th className="px-6 py-4">Branch</th>
-                    <th className="px-4 py-4 text-center">Stuck</th>
-                    <th className="px-4 py-4 text-center">PD</th>
-                    <th className="px-4 py-4 text-center">Doc</th>
-                    <th className="px-4 py-4 text-center">Login</th>
-                    <th className="px-4 py-4 text-center">Sanction</th>
-                    <th className="px-4 py-4 text-center">Reg</th>
-                    <th className="px-4 py-4 text-center">Disb</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(branchBreakdown).map(([branchName, counts]) => (
-                    <tr key={branchName} className="border-b border-[var(--hairline)] hover:bg-[var(--canvas)] transition-colors">
-                      <td className="px-6 py-4 font-bold text-[var(--ink)]">{branchName}</td>
-                      <td className="px-4 py-4 text-center font-extrabold text-[var(--status-stuck)]" style={{ backgroundColor: 'var(--status-stuck-bg)' }}><span className="pulse-numeral">{counts.stuckCases}</span></td>
-                      <td className="px-4 py-4 text-center text-[var(--ink-soft)]"><span className="pulse-numeral">{counts.pdPending}</span></td>
-                      <td className="px-4 py-4 text-center text-[var(--ink-soft)]"><span className="pulse-numeral">{counts.docPending}</span></td>
-                      <td className="px-4 py-4 text-center text-[var(--ink-soft)]"><span className="pulse-numeral">{counts.loginPending}</span></td>
-                      <td className="px-4 py-4 text-center text-[var(--ink-soft)]"><span className="pulse-numeral">{counts.sanctionPending}</span></td>
-                      <td className="px-4 py-4 text-center text-[var(--ink-soft)]"><span className="pulse-numeral">{counts.registrationPending}</span></td>
-                      <td className="px-4 py-4 text-center font-bold text-[var(--status-good)]" style={{ backgroundColor: 'var(--status-good-bg)' }}><span className="pulse-numeral">{counts.disbursementPending}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <h3 className="text-lg font-bold text-[var(--ink)] font-display">Stuck & Pending Cases Ledger</h3>
+          <DataTable
+            columns={columns}
+            data={pendingFiles}
+            searchPlaceholder="Search pending cases by customer or coordinator..."
+            searchKey="customerName"
+            filterOptions={[
+              { label: 'priority', options: ['All Priorities', 'High', 'Medium', 'Low'] },
+              { label: 'branch', options: ['All Branches', 'Mumbai', 'Delhi', 'Bangalore'] }
+            ]}
+          />
         </div>
-
-        {/* Breakdown by Coordinator (Employee) */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-[var(--ink)]">Pending Breakdown by Coordinator</h3>
-          </div>
-          <div className="neu-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-[var(--hairline)] text-left text-[var(--ink-soft)] uppercase tracking-wider font-semibold">
-                    <th className="px-6 py-4">Employee</th>
-                    <th className="px-4 py-4 text-center">Stuck</th>
-                    <th className="px-4 py-4 text-center">PD</th>
-                    <th className="px-4 py-4 text-center">Doc</th>
-                    <th className="px-4 py-4 text-center">Login</th>
-                    <th className="px-4 py-4 text-center">Sanction</th>
-                    <th className="px-4 py-4 text-center">Reg</th>
-                    <th className="px-4 py-4 text-center">Disb</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(employeeBreakdown).map(([employeeName, counts]) => (
-                    <tr key={employeeName} className="border-b border-[var(--hairline)] hover:bg-[var(--canvas)] transition-colors">
-                      <td className="px-6 py-4 font-bold text-[var(--ink)]">{employeeName}</td>
-                      <td className="px-4 py-4 text-center font-extrabold text-[var(--status-stuck)]" style={{ backgroundColor: 'var(--status-stuck-bg)' }}><span className="pulse-numeral">{counts.stuckCases}</span></td>
-                      <td className="px-4 py-4 text-center text-[var(--ink-soft)]"><span className="pulse-numeral">{counts.pdPending}</span></td>
-                      <td className="px-4 py-4 text-center text-[var(--ink-soft)]"><span className="pulse-numeral">{counts.docPending}</span></td>
-                      <td className="px-4 py-4 text-center text-[var(--ink-soft)]"><span className="pulse-numeral">{counts.loginPending}</span></td>
-                      <td className="px-4 py-4 text-center text-[var(--ink-soft)]"><span className="pulse-numeral">{counts.sanctionPending}</span></td>
-                      <td className="px-4 py-4 text-center text-[var(--ink-soft)]"><span className="pulse-numeral">{counts.registrationPending}</span></td>
-                      <td className="px-4 py-4 text-center font-bold text-[var(--status-good)]" style={{ backgroundColor: 'var(--status-good-bg)' }}><span className="pulse-numeral">{counts.disbursementPending}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      </ScrollRevealMotion>
     </PageTransition>
   )
 }

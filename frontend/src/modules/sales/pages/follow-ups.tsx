@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { PageTransition, StaggerContainer, StaggerItem } from '../../shared/components/MotionComponents'
 import { Clock, AlertTriangle, CheckCircle, Phone, Calendar, User } from 'lucide-react'
+import StatCard from '../../shared/components/StatCard'
+import StatusBadge from '../../shared/components/StatusBadge'
 
 const mockFollowUps = [
   { id: '1', name: 'Arjun Mehta', time: '10:00', description: 'Interested in Andheri project, wants to visit', status: 'pending', assignedTo: 'Rohit Verma' },
@@ -33,34 +35,18 @@ const mockFollowUps = [
   { id: '28', name: 'Anushka Sharma', time: '17:15', description: 'Call regarding Powai Lake View cancellation', status: 'completed', assignedTo: 'Sanjay Gupta' },
 ]
 
-function getStatusStyle(status: string) {
-  switch (status) {
-    case 'missed': return 'bg-red-100 text-red-700'
-    case 'completed': return 'bg-green-100 text-green-700'
-    case 'pending':
-    default: return 'bg-yellow-100 text-yellow-700'
-  }
-}
-
-function getStatusIcon(status: string) {
-  switch (status) {
-    case 'missed': return <AlertTriangle size={14} />
-    case 'completed': return <CheckCircle size={14} />
-    default: return <Clock size={14} />
-  }
-}
-
 function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 }
 
 const avatarColors = [
-  'bg-blue-100 text-blue-700',
-  'bg-emerald-100 text-emerald-700',
-  'bg-purple-100 text-purple-700',
-  'bg-orange-100 text-orange-700',
-  'bg-pink-100 text-pink-700',
+  'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+  'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+  'bg-purple-500/20 text-purple-400 border border-purple-500/30',
+  'bg-orange-500/20 text-orange-400 border border-orange-500/30',
+  'bg-pink-500/20 text-pink-400 border border-pink-500/30',
 ]
+
 function getAvatarColor(name: string) {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
@@ -84,91 +70,77 @@ export default function FollowUps() {
 
   return (
     <PageTransition>
-      <div className="p-6 max-w-[1600px] mx-auto space-y-6">
+      <div className="space-y-6 text-left">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Follow-ups</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage and track all follow-up calls</p>
+            <h1 className="page-title font-display">Follow-ups</h1>
+            <p className="page-subtitle">Manage and track all follow-up calls</p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Calendar size={16} className="text-gray-400" />
-            <span className="font-medium">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}</span>
+          <div className="flex items-center gap-2 text-xs text-[var(--ink-soft)] font-mono self-start sm:self-auto bg-[var(--bg-surface)] border border-[var(--border-color)] px-3 py-1.5 rounded-lg">
+            <Calendar size={14} className="text-[var(--ink-muted)]" />
+            <span>{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}</span>
           </div>
         </div>
 
         {/* Stat Cards */}
-        <StaggerContainer className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 flex items-center gap-4 shadow-sm">
-              <div className="w-11 h-11 rounded-xl bg-yellow-50 text-yellow-600 flex items-center justify-center shrink-0">
-                <Clock size={22} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Due Today</p>
-                <h3 className="text-2xl counter-value text-gray-900 mt-0.5">{pendingCount}</h3>
-              </div>
-            </div>
+            <StatCard
+              label="Due Today"
+              value={pendingCount}
+              icon={<Clock size={16} />}
+              valueColor="text-[var(--warning)]"
+              subtitle="Pending follow-ups"
+            />
           </StaggerItem>
-          
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 flex items-center gap-4 shadow-sm">
-              <div className="w-11 h-11 rounded-xl bg-red-50 text-red-500 flex items-center justify-center shrink-0">
-                <AlertTriangle size={22} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Missed</p>
-                <h3 className="text-2xl counter-value text-red-600 mt-0.5">{missedCount}</h3>
-              </div>
-            </div>
+            <StatCard
+              label="Missed"
+              value={missedCount}
+              icon={<AlertTriangle size={16} />}
+              valueColor="text-[var(--danger)]"
+              subtitle="Overdue follow-ups"
+            />
           </StaggerItem>
-
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 flex items-center gap-4 shadow-sm">
-              <div className="w-11 h-11 rounded-xl bg-green-50 text-green-500 flex items-center justify-center shrink-0">
-                <CheckCircle size={22} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Completed</p>
-                <h3 className="text-2xl counter-value text-green-600 mt-0.5">{completedCount}</h3>
-              </div>
-            </div>
+            <StatCard
+              label="Completed"
+              value={completedCount}
+              icon={<CheckCircle size={16} />}
+              valueColor="text-[var(--success)]"
+              subtitle="Closed follow-ups today"
+            />
           </StaggerItem>
-          
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 flex items-center gap-4 shadow-sm">
-              <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
-                <Phone size={22} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Total</p>
-                <h3 className="text-2xl counter-value text-gray-900 mt-0.5">{totalCount}</h3>
-              </div>
-            </div>
+            <StatCard
+              label="Total Tasks"
+              value={totalCount}
+              icon={<Phone size={16} />}
+              subtitle="All registered follow-ups"
+            />
           </StaggerItem>
         </StaggerContainer>
 
-        {/* Tabs */}
-        <div className="flex items-center gap-2">
+        {/* Tabs Control */}
+        <div className="flex bg-[var(--bg-surface)] border border-[var(--border-color)] p-1 rounded-lg self-start gap-1 max-w-max">
           {[
-            { label: 'Today', count: pendingCount, color: 'bg-gray-100 text-gray-700' },
-            { label: 'Missed', count: missedCount, color: 'bg-red-500 text-white' },
-            { label: 'Completed', count: completedCount, color: 'bg-green-100 text-green-700' },
-            { label: 'All', count: totalCount, color: 'bg-gray-100 text-gray-500' },
+            { label: 'Today', count: pendingCount },
+            { label: 'Missed', count: missedCount },
+            { label: 'Completed', count: completedCount },
+            { label: 'All', count: totalCount },
           ].map(tab => (
             <button 
               key={tab.label}
               onClick={() => setActiveTab(tab.label)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${
                 activeTab === tab.label 
-                  ? 'bg-white border border-gray-200 text-gray-900 shadow-sm' 
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'bg-[var(--bg-card)] text-[var(--ink)] shadow-sm' 
+                  : 'text-[var(--ink-soft)] hover:text-[var(--ink)] hover:bg-[var(--bg-hover)]/30'
               }`}
             >
-              {tab.label === 'All' ? 'All Follow-ups' : tab.label}
-              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                activeTab === tab.label ? tab.color : 'bg-gray-100 text-gray-500'
-              }`}>
+              {tab.label === 'All' ? 'All' : tab.label}
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink-soft)]">
                 {tab.count}
               </span>
             </button>
@@ -176,46 +148,42 @@ export default function FollowUps() {
         </div>
 
         {/* List Section */}
-        <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-base font-bold text-gray-900">
-              {activeTab === 'Today' ? "Today's Follow-ups" : activeTab === 'Missed' ? "Missed Follow-ups" : activeTab === 'Completed' ? "Completed Follow-ups" : "All Follow-ups"}
+        <div className="card overflow-hidden">
+          <div className="px-6 py-4 border-b border-[var(--border-color)] flex items-center justify-between bg-[var(--bg-surface)]/20">
+            <h2 className="text-sm font-bold text-[var(--ink)] font-display uppercase tracking-wider">
+              {activeTab === 'Today' ? "Today's Queue" : activeTab === 'Missed' ? "Missed Queue" : activeTab === 'Completed' ? "Completed Queue" : "All Records"}
             </h2>
-            <span className="text-xs font-medium text-gray-400">{filteredFollowUps.length} items</span>
+            <span className="text-xs font-bold text-[var(--ink-muted)] font-mono">{filteredFollowUps.length} items</span>
           </div>
           
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-[var(--border-color)]">
             {filteredFollowUps.map((item, idx) => (
               <div 
                 key={item.id + '-' + idx} 
-                className="anim-row p-5 flex items-center gap-4 hover:bg-gray-50/50 transition-all group cursor-pointer"
-                style={{ '--i': idx } as React.CSSProperties}
+                className="p-5 flex items-center gap-4 hover:bg-[var(--bg-hover)]/30 transition-all group cursor-pointer"
               >
                 {/* Avatar */}
-                <span className={`avatar-circle ${getAvatarColor(item.name)}`}>
+                <span className={`avatar-circle font-bold text-[10px] w-9 h-9 ${getAvatarColor(item.name)}`}>
                   {getInitials(item.name)}
                 </span>
                 
                 {/* Content */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-semibold text-gray-900">{item.name}</h4>
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getStatusStyle(item.status)}`}>
-                      {getStatusIcon(item.status)}
-                      {item.status}
-                    </span>
+                    <h4 className="text-sm font-bold text-[var(--ink)]">{item.name}</h4>
+                    <StatusBadge status={item.status} />
                   </div>
-                  <p className="mt-1 text-sm text-slate-500 line-clamp-1">{item.description}</p>
+                  <p className="mt-1 text-xs text-[var(--ink-soft)] font-medium leading-relaxed truncate">{item.description}</p>
                 </div>
 
                 {/* Time & Assignee */}
-                <div className="flex flex-col items-end gap-1.5 shrink-0">
-                  <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-                    <Clock size={13} className="text-gray-400" />
+                <div className="flex flex-col items-end gap-1.5 shrink-0 text-right">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--ink)] font-mono">
+                    <Clock size={12} className="text-[var(--ink-muted)]" />
                     {item.time}
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-gray-400">
-                    <User size={11} />
+                  <div className="flex items-center gap-1 text-[10px] text-[var(--ink-muted)] font-bold">
+                    <User size={10} />
                     {item.assignedTo}
                   </div>
                 </div>
@@ -226,14 +194,13 @@ export default function FollowUps() {
           {filteredFollowUps.length === 0 && (
             <div className="py-16 text-center">
               <div className="float-bounce inline-block mb-4">
-                <CheckCircle size={40} className="text-green-300" />
+                <CheckCircle size={40} className="text-[var(--success)]" />
               </div>
-              <p className="text-gray-500 font-medium">All caught up!</p>
-              <p className="text-sm text-gray-400 mt-1">No follow-ups in this category</p>
+              <p className="text-[var(--ink-soft)] font-bold">All caught up!</p>
+              <p className="text-xs text-[var(--ink-muted)] mt-1">No follow-ups in this category</p>
             </div>
           )}
         </div>
-
       </div>
     </PageTransition>
   )

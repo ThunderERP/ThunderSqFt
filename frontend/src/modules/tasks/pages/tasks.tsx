@@ -1,9 +1,26 @@
-import { useState } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { PageTransition, StaggerContainer, StaggerItem } from '../../shared/components/MotionComponents'
-import { Plus, ChevronDown, Edit, Trash2, X, ArrowUpDown, ArrowUp, ArrowDown, ListTodo, Clock, CheckCircle2, AlertOctagon, Zap } from 'lucide-react'
-import EmptyState from '../../shared/components/EmptyState'
+import PageHeader from '../../shared/components/PageHeader'
+import StatCard from '../../shared/components/StatCard'
+import StatusBadge from '../../shared/components/StatusBadge'
+import DataTable from '../../shared/components/DataTable'
+import { Plus, Edit, Trash2, X, ListTodo, Clock, CheckCircle2, AlertOctagon, Zap, ChevronDown, AlertTriangle, Check } from 'lucide-react'
 
-const mockTasks = [
+/* ------------------------------------------------------------------ */
+/*  Types & seed data                                                 */
+/* ------------------------------------------------------------------ */
+interface Task {
+  id: string
+  title: string
+  assignee: string
+  dueDate: string
+  priority: string
+  status: string
+  progress: number
+  remarks?: string
+}
+
+const initialTasks: Task[] = [
   { id: '1', title: 'Send updated price list to all leads', assignee: 'Rohit Verma', dueDate: '2026-06-20', priority: 'medium', status: 'pending', progress: 0 },
   { id: '2', title: 'Update CRM with latest site visit notes', assignee: 'Anita Joshi', dueDate: '2026-06-20', priority: 'high', status: 'in progress', progress: 60 },
   { id: '3', title: 'Prepare weekly sales report', assignee: 'Sanjay Gupta', dueDate: '2026-06-19', priority: 'critical', status: 'overdue', progress: 40 },
@@ -33,305 +50,382 @@ const mockTasks = [
   { id: '27', title: 'Send newsletters to prospects', assignee: 'Anita Joshi', dueDate: '2026-06-26', priority: 'medium', status: 'completed', progress: 100 },
 ]
 
+const TEAM_MEMBERS = ['Rohit Verma', 'Anita Joshi', 'Sanjay Gupta', 'Meera Nair', 'Deepak Rao']
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                           */
+/* ------------------------------------------------------------------ */
 function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 }
-const avatarColors = ['bg-blue-100 text-blue-700','bg-emerald-100 text-emerald-700','bg-purple-100 text-purple-700','bg-orange-100 text-orange-700','bg-pink-100 text-pink-700']
-function getAvatarColor(name: string) { let h=0; for(let i=0;i<name.length;i++) h=name.charCodeAt(i)+((h<<5)-h); return avatarColors[Math.abs(h)%avatarColors.length]; }
+const avatarColors = [
+  'bg-blue-600/30 text-blue-400 border-blue-500/20',
+  'bg-emerald-600/30 text-emerald-400 border-emerald-500/20',
+  'bg-purple-600/30 text-purple-400 border-purple-500/20',
+  'bg-orange-600/30 text-orange-400 border-orange-500/20',
+  'bg-pink-600/30 text-pink-400 border-pink-500/20'
+]
+function getAvatarColor(name: string) { 
+  let h = 0; 
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h); 
+  return avatarColors[Math.abs(h) % avatarColors.length]; 
+}
 
+const blankForm = (): Omit<Task, 'id'> => ({
+  title: '',
+  assignee: '',
+  dueDate: '',
+  priority: 'medium',
+  status: 'pending',
+  progress: 0,
+  remarks: '',
+})
+
+/* ------------------------------------------------------------------ */
+/*  Toast component (inline)                                          */
+/* ------------------------------------------------------------------ */
+interface ToastData {
+  id: number
+  message: string
+  type: 'success' | 'error' | 'info'
+}
+
+function Toast({ toast, onDismiss }: { toast: ToastData; onDismiss: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onDismiss, 3000)
+    return () => clearTimeout(timer)
+  }, [onDismiss])
+
+  const color = toast.type === 'success'
+    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
+    : toast.type === 'error'
+      ? 'border-red-500/40 bg-red-500/10 text-red-400'
+      : 'border-blue-500/40 bg-blue-500/10 text-blue-400'
+
+  const Icon = toast.type === 'success' ? Check : toast.type === 'error' ? AlertTriangle : Check
+
+  return (
+    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border ${color} shadow-lg backdrop-blur-sm animate-slide-in-right`}>
+      <Icon size={16} />
+      <span className="text-sm font-medium">{toast.message}</span>
+      <button onClick={onDismiss} className="ml-2 opacity-60 hover:opacity-100 transition-opacity">
+        <X size={14} />
+      </button>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Delete-confirmation modal                                         */
+/* ------------------------------------------------------------------ */
+function DeleteConfirmModal({ taskTitle, onConfirm, onCancel }: { taskTitle: string; onConfirm: () => void; onCancel: () => void }) {
+  return (
+    <>
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]" onClick={onCancel} />
+      <div className="fixed z-[70] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl shadow-2xl p-6 space-y-5">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+            <AlertTriangle size={20} className="text-red-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-[var(--ink)] font-display">Delete Task</h3>
+            <p className="text-sm text-[var(--ink-soft)] mt-1">
+              Are you sure you want to delete <strong className="text-[var(--ink)]">"{taskTitle}"</strong>? This action cannot be undone.
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm font-semibold text-[var(--ink-soft)] bg-transparent border border-[var(--border-color)] rounded-lg hover:bg-[var(--bg-surface)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Main component                                                    */
+/* ------------------------------------------------------------------ */
 export default function Tasks() {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [isSlideOverOpen, setIsSlideOverOpen] = useState(false)
-  const [statusFilter, setStatusFilter] = useState('All Statuses');
-  const [priorityFilter, setPriorityFilter] = useState('All Priorities');
-  
-  type SortField = 'title' | 'assignee' | 'dueDate' | 'priority' | 'status' | 'progress' | null;
-  const [sortField, setSortField] = useState<SortField>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [form, setForm] = useState<Omit<Task, 'id'>>(blankForm())
+  const [toasts, setToasts] = useState<ToastData[]>([])
+  const [deleteTarget, setDeleteTarget] = useState<Task | null>(null)
+  const [formErrors, setFormErrors] = useState<Record<string, boolean>>({})
+  const nextId = useRef(initialTasks.length + 1)
+  const titleInputRef = useRef<HTMLInputElement>(null)
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      if (sortDirection === 'asc') setSortDirection('desc');
-      else setSortField(null);
+  /* ---- toast helper ---- */
+  const addToast = useCallback((message: string, type: ToastData['type'] = 'success') => {
+    const id = Date.now()
+    setToasts(prev => [...prev, { id, message, type }])
+  }, [])
+  const removeToast = useCallback((id: number) => {
+    setToasts(prev => prev.filter(t => t.id !== id))
+  }, [])
+
+  /* ---- slide-over open/close helpers ---- */
+  const openAddPanel = useCallback(() => {
+    setEditingTask(null)
+    setForm(blankForm())
+    setFormErrors({})
+    setIsSlideOverOpen(true)
+    setTimeout(() => titleInputRef.current?.focus(), 150)
+  }, [])
+
+  const openEditPanel = useCallback((task: Task) => {
+    setEditingTask(task)
+    setForm({
+      title: task.title,
+      assignee: task.assignee,
+      dueDate: task.dueDate,
+      priority: task.priority,
+      status: task.status,
+      progress: task.progress,
+      remarks: task.remarks || '',
+    })
+    setFormErrors({})
+    setIsSlideOverOpen(true)
+    setTimeout(() => titleInputRef.current?.focus(), 150)
+  }, [])
+
+  const closePanel = useCallback(() => {
+    setIsSlideOverOpen(false)
+    setEditingTask(null)
+    setForm(blankForm())
+    setFormErrors({})
+  }, [])
+
+  /* ---- form field updater ---- */
+  const updateField = useCallback(<K extends keyof Omit<Task, 'id'>>(key: K, value: Omit<Task, 'id'>[K]) => {
+    setForm(prev => ({ ...prev, [key]: value }))
+    setFormErrors(prev => ({ ...prev, [key]: false }))
+  }, [])
+
+  /* ---- validate ---- */
+  const validate = (): boolean => {
+    const errors: Record<string, boolean> = {}
+    if (!form.title.trim()) errors.title = true
+    if (!form.assignee || form.assignee === '') errors.assignee = true
+    if (!form.dueDate) errors.dueDate = true
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  /* ---- save (add or edit) ---- */
+  const handleSave = useCallback(() => {
+    if (!validate()) return
+
+    if (editingTask) {
+      // Edit existing
+      setTasks(prev =>
+        prev.map(t =>
+          t.id === editingTask.id
+            ? { ...t, ...form }
+            : t
+        )
+      )
+      addToast(`Task "${form.title}" updated successfully`)
     } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const getSortIcon = (field: SortField) => {
-    if (sortField !== field) return <ArrowUpDown size={14} className="text-gray-300" />;
-    return sortDirection === 'asc' ? <ArrowUp size={14} className="text-[#2563EB]" /> : <ArrowDown size={14} className="text-[#2563EB]" />;
-  };
-
-  const priorityWeight = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 };
-
-  let filteredTasks = mockTasks.filter(task => {
-    const matchesStatus = statusFilter === 'All Statuses' || task.status.toLowerCase() === statusFilter.toLowerCase();
-    const matchesPriority = priorityFilter === 'All Priorities' || task.priority.toLowerCase() === priorityFilter.toLowerCase();
-    return matchesStatus && matchesPriority;
-  });
-
-  if (sortField) {
-    filteredTasks.sort((a, b) => {
-      if (sortField === 'progress') {
-        return sortDirection === 'asc' ? a.progress - b.progress : b.progress - a.progress;
+      // Add new
+      const newTask: Task = {
+        id: String(nextId.current++),
+        ...form,
       }
-      if (sortField === 'priority') {
-        const aVal = priorityWeight[a.priority as keyof typeof priorityWeight] || 0;
-        const bVal = priorityWeight[b.priority as keyof typeof priorityWeight] || 0;
-        return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
-      }
-      const aVal = String(a[sortField] || '');
-      const bVal = String(b[sortField] || '');
-      const comparison = aVal.localeCompare(bVal);
-      return sortDirection === 'asc' ? comparison : -comparison;
-    });
-  }
-
-  const getPriorityStyle = (priority: string) => {
-    switch (priority) {
-      case 'critical': return 'bg-red-100 text-red-700'
-      case 'high': return 'bg-orange-100 text-orange-700'
-      case 'medium': return 'bg-blue-100 text-blue-700'
-      case 'low': return 'bg-gray-100 text-gray-700'
-      default: return 'bg-gray-100 text-gray-700'
+      setTasks(prev => [newTask, ...prev])
+      addToast(`Task "${form.title}" added successfully`)
     }
-  }
 
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-700'
-      case 'in progress': return 'bg-blue-100 text-blue-700'
-      case 'overdue': return 'bg-red-100 text-red-700'
-      case 'completed': return 'bg-emerald-100 text-emerald-700'
-      default: return 'bg-gray-100 text-gray-700'
-    }
-  }
+    closePanel()
+  }, [editingTask, form, addToast, closePanel])
 
+  /* ---- delete ---- */
+  const confirmDelete = useCallback(() => {
+    if (!deleteTarget) return
+    setTasks(prev => prev.filter(t => t.id !== deleteTarget.id))
+    addToast(`Task "${deleteTarget.title}" deleted`, 'error')
+    setDeleteTarget(null)
+  }, [deleteTarget, addToast])
+
+  /* ---- helpers ---- */
   const getProgressColor = (progress: number) => {
-    if (progress >= 100) return 'bg-emerald-500'
-    if (progress >= 60) return 'bg-blue-500'
-    if (progress >= 30) return 'bg-yellow-500'
-    return 'bg-gray-300'
+    if (progress >= 100) return 'bg-[var(--success)]'
+    if (progress >= 60) return 'bg-[var(--accent)]'
+    if (progress >= 30) return 'bg-[var(--warning)]'
+    return 'bg-[var(--ink-muted)]'
   }
 
   // Live computed stats
-  const totalTasks = mockTasks.length
-  const pendingTasks = mockTasks.filter(t => t.status === 'pending').length
-  const inProgressTasks = mockTasks.filter(t => t.status === 'in progress').length
-  const completedTasks = mockTasks.filter(t => t.status === 'completed').length
-  const overdueTasks = mockTasks.filter(t => t.status === 'overdue').length
+  const totalTasks = tasks.length
+  const pendingTasks = tasks.filter(t => t.status === 'pending').length
+  const inProgressTasks = tasks.filter(t => t.status === 'in progress').length
+  const completedTasks = tasks.filter(t => t.status === 'completed').length
+  const overdueTasks = tasks.filter(t => t.status === 'overdue').length
+
+  /* ---- table columns ---- */
+  const columns = [
+    {
+      key: 'title',
+      label: 'Task',
+      render: (item: any) => <span className="font-semibold text-[var(--ink)]">{item.title}</span>
+    },
+    {
+      key: 'assignee',
+      label: 'Assigned To',
+      render: (item: any) => (
+        <div className="flex items-center gap-2">
+          <span className={`w-7 h-7 rounded-full border flex items-center justify-center text-[10px] font-bold font-mono ${getAvatarColor(item.assignee)}`}>
+            {getInitials(item.assignee)}
+          </span>
+          <span className="text-[var(--ink-soft)]">{item.assignee}</span>
+        </div>
+      )
+    },
+    {
+      key: 'dueDate',
+      label: 'Due Date',
+      render: (item: any) => (
+        <StatusBadge status={item.dueDate} domain={item.status === 'overdue' ? 'priority' : 'neutral'} />
+      )
+    },
+    {
+      key: 'priority',
+      label: 'Priority',
+      render: (item: any) => (
+        <StatusBadge status={item.priority} domain="priority" />
+      )
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (item: any) => (
+        <StatusBadge status={item.status} />
+      )
+    },
+    {
+      key: 'progress',
+      label: 'Progress',
+      render: (item: any) => (
+        <div className="flex items-center gap-2 min-w-[120px]">
+          <div className="flex-1 bg-[var(--bg-body)] rounded-full h-1.5 overflow-hidden">
+            <div 
+              className={`h-1.5 rounded-full ${getProgressColor(item.progress)}`}
+              style={{ width: `${item.progress}%` }}
+            ></div>
+          </div>
+          <span className="text-xs font-mono text-[var(--ink-soft)] w-8 text-right">{item.progress}%</span>
+        </div>
+      )
+    },
+    {
+      key: 'actions',
+      label: '',
+      render: (item: any) => (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); openEditPanel(item) }}
+            className="p-1.5 rounded-md text-[var(--ink-soft)] hover:text-[var(--accent)] hover:bg-[var(--bg-surface)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            title="Edit Task"
+          >
+            <Edit size={14} />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setDeleteTarget(item) }}
+            className="p-1.5 rounded-md text-[var(--ink-soft)] hover:text-[var(--danger)] hover:bg-[var(--bg-surface)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
+            title="Delete Task"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      )
+    }
+  ]
+
+  const filterOptions = [
+    { label: 'status', options: ['All Statuses', 'Pending', 'In Progress', 'Overdue', 'Completed'] },
+    { label: 'priority', options: ['All Priorities', 'Low', 'Medium', 'High', 'Critical'] }
+  ]
+
+  /* ---- input class helper ---- */
+  const inputCls = (hasError: boolean) =>
+    `w-full bg-[var(--bg-surface)] border ${hasError ? 'border-red-500 ring-1 ring-red-500/20' : 'border-[var(--border-color)]'} text-[var(--ink)] placeholder-[var(--ink-muted)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all`
+
+  const selectCls = (hasError: boolean) =>
+    `w-full bg-[var(--bg-surface)] border ${hasError ? 'border-red-500 ring-1 ring-red-500/20' : 'border-[var(--border-color)]'} text-[var(--ink)] rounded-lg pl-3 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] cursor-pointer transition-all`
 
   return (
     <PageTransition>
-      <div className="p-6 max-w-[1600px] mx-auto space-y-6">
+      <div className="p-6 max-w-[1600px] mx-auto space-y-6 text-[var(--ink)]">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Tasks</h1>
-            <p className="text-sm text-gray-500 mt-1">Track and manage daily tasks</p>
-          </div>
-          <button 
-            onClick={() => setIsSlideOverOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#2563EB] text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all active:scale-[0.97]"
-          >
-            <Plus size={16} /> Add Task
-          </button>
-        </div>
+        <PageHeader 
+          title="Tasks"
+          subtitle="Track and manage daily tasks"
+          actions={
+            <button 
+              onClick={openAddPanel}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[var(--accent)] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            >
+              <Plus size={16} /> Add Task
+            </button>
+          }
+        />
 
         {/* Stat Cards */}
-        <StaggerContainer className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
-                  <ListTodo size={18} />
-                </div>
-                <span className="text-sm font-medium text-gray-500">Total</span>
-              </div>
-              <div className="text-2xl counter-value text-gray-900">{totalTasks}</div>
-            </div>
+            <StatCard label="Total Tasks" value={String(totalTasks)} subtitle="Overall count" valueColor="text-[var(--ink)]" />
           </StaggerItem>
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-lg bg-yellow-50 text-yellow-500 flex items-center justify-center shrink-0">
-                  <Clock size={18} />
-                </div>
-                <span className="text-sm font-medium text-gray-500">Pending</span>
-              </div>
-              <div className="text-2xl counter-value text-yellow-600">{pendingTasks}</div>
-            </div>
+            <StatCard label="Pending" value={String(pendingTasks)} subtitle="Awaiting start" valueColor="text-[var(--warning)]" />
           </StaggerItem>
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
-                  <Zap size={18} />
-                </div>
-                <span className="text-sm font-medium text-gray-500">In Progress</span>
-              </div>
-              <div className="text-2xl counter-value text-[#2563EB]">{inProgressTasks}</div>
-            </div>
+            <StatCard label="In Progress" value={String(inProgressTasks)} subtitle="Active work" valueColor="text-[var(--accent)]" />
           </StaggerItem>
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0">
-                  <CheckCircle2 size={18} />
-                </div>
-                <span className="text-sm font-medium text-gray-500">Completed</span>
-              </div>
-              <div className="text-2xl counter-value text-emerald-500">{completedTasks}</div>
-            </div>
+            <StatCard label="Completed" value={String(completedTasks)} subtitle="Finished tasks" valueColor="text-[var(--success)]" />
           </StaggerItem>
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-lg bg-red-50 text-red-500 flex items-center justify-center shrink-0">
-                  <AlertOctagon size={18} />
-                </div>
-                <span className="text-sm font-medium text-gray-500">Overdue</span>
-              </div>
-              <div className="text-2xl counter-value text-red-500">{overdueTasks}</div>
-            </div>
+            <StatCard label="Overdue" value={String(overdueTasks)} subtitle="Missed due dates" valueColor="text-[var(--danger)]" />
           </StaggerItem>
         </StaggerContainer>
 
-        {/* Filter Row */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-full md:w-48">
-            <select 
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full appearance-none border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all"
-            >
-              <option>All Statuses</option>
-              <option>Pending</option>
-              <option>In Progress</option>
-              <option>Overdue</option>
-              <option>Completed</option>
-            </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          </div>
-          <div className="relative w-full md:w-48">
-            <select 
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="w-full appearance-none border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all"
-            >
-              <option>All Priorities</option>
-              <option>Low</option>
-              <option>Medium</option>
-              <option>High</option>
-              <option>Critical</option>
-            </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          </div>
-          <span className="text-xs font-medium text-gray-400 ml-auto">{filteredTasks.length} tasks</span>
-        </div>
-
         {/* Table */}
-        <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-600">
-              <thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-100">
-                <tr>
-                  <th className="px-6 py-4 font-medium cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('title')}>
-                    <div className="flex items-center gap-2">Task {getSortIcon('title')}</div>
-                  </th>
-                  <th className="px-6 py-4 font-medium cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('assignee')}>
-                    <div className="flex items-center gap-2">Assigned To {getSortIcon('assignee')}</div>
-                  </th>
-                  <th className="px-6 py-4 font-medium cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('dueDate')}>
-                    <div className="flex items-center gap-2">Due Date {getSortIcon('dueDate')}</div>
-                  </th>
-                  <th className="px-6 py-4 font-medium cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('priority')}>
-                    <div className="flex items-center gap-2">Priority {getSortIcon('priority')}</div>
-                  </th>
-                  <th className="px-6 py-4 font-medium cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('status')}>
-                    <div className="flex items-center gap-2">Status {getSortIcon('status')}</div>
-                  </th>
-                  <th className="px-6 py-4 font-medium cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('progress')}>
-                    <div className="flex items-center gap-2">Progress {getSortIcon('progress')}</div>
-                  </th>
-                  <th className="px-6 py-4 whitespace-nowrap w-24"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filteredTasks.map((task, idx) => (
-                  <tr key={task.id} className="anim-row hover:bg-gray-50/50 transition-all group" style={{ '--i': idx } as React.CSSProperties}>
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-gray-900">{task.title}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <span className={`avatar-circle ${getAvatarColor(task.assignee)}`} style={{ width: 28, height: 28, fontSize: 11 }}>
-                          {getInitials(task.assignee)}
-                        </span>
-                        <span className="text-gray-600">{task.assignee}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 whitespace-nowrap">{task.dueDate}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${getPriorityStyle(task.priority)}`}>
-                        {task.priority}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${getStatusStyle(task.status)}`}>
-                        {task.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap min-w-[160px]">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                          <div 
-                            className={`progress-animated h-1.5 rounded-full ${getProgressColor(task.progress)}`}
-                            style={{ width: `${task.progress}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-xs font-medium text-gray-500 w-8 text-right">{task.progress}%</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="p-1.5 rounded-md text-gray-400 hover:text-[#2563EB] hover:bg-blue-50 transition-all">
-                          <Edit size={14} />
-                        </button>
-                        <button className="p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {filteredTasks.length === 0 && (
-            <EmptyState 
-              icon={ListTodo} 
-              title="No tasks match your filters" 
-              description="Try adjusting your criteria" 
-            />
-          )}
-        </div>
+        <DataTable 
+          columns={columns}
+          data={tasks}
+          searchPlaceholder="Search tasks..."
+          searchKey="title"
+          filterOptions={filterOptions}
+        />
       </div>
 
       {/* Slide-over Panel */}
       {isSlideOverOpen && (
         <>
           <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-            onClick={() => setIsSlideOverOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            onClick={closePanel}
           />
-          <div className="fixed inset-y-0 right-0 w-full md:w-[450px] bg-white shadow-2xl z-50 flex flex-col" style={{ animation: 'rowSlideIn 0.3s ease-out' }}>
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">Add Task</h2>
+          <div className="fixed inset-y-0 right-0 w-full md:w-[450px] bg-[var(--bg-card)] border-l border-[var(--border-color)] shadow-2xl z-50 flex flex-col transition-all animate-slide-in-right">
+            <div className="flex items-center justify-between p-6 border-b border-[var(--border-color)]">
+              <h2 className="text-xl font-bold text-[var(--ink)] font-display">
+                {editingTask ? 'Edit Task' : 'Add Task'}
+              </h2>
               <button 
-                onClick={() => setIsSlideOverOpen(false)}
-                className="p-1.5 border border-blue-100 hover:bg-blue-50 rounded-full transition-colors text-blue-500"
+                onClick={closePanel}
+                className="p-1.5 border border-[var(--border-color)] hover:bg-[var(--bg-surface)] rounded-full transition-colors text-[var(--ink-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               >
                 <X size={18} />
               </button>
@@ -339,98 +433,149 @@ export default function Tasks() {
             
             <div className="flex-1 overflow-y-auto p-6">
               <div className="space-y-5">
+                {/* Task Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1.5">Task Name *</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Task Name *</label>
                   <input 
+                    ref={titleInputRef}
                     type="text" 
                     placeholder="Task description"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder-gray-400 transition-all" 
+                    value={form.title}
+                    onChange={e => updateField('title', e.target.value)}
+                    className={inputCls(!!formErrors.title)}
                   />
+                  {formErrors.title && <p className="text-red-400 text-xs mt-1">Task name is required</p>}
                 </div>
 
+                {/* Assigned To */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1.5">Assigned To *</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Assigned To *</label>
                   <div className="relative">
-                    <select className="w-full appearance-none border border-gray-200 rounded-lg pl-3 pr-10 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all">
-                      <option>Select user</option>
-                      <option>Rohit Verma</option>
-                      <option>Anita Joshi</option>
-                      <option>Meera Nair</option>
+                    <select
+                      value={form.assignee}
+                      onChange={e => updateField('assignee', e.target.value)}
+                      className={selectCls(!!formErrors.assignee)}
+                    >
+                      <option value="">Select user</option>
+                      {TEAM_MEMBERS.map(name => (
+                        <option key={name} value={name}>{name}</option>
+                      ))}
                     </select>
-                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)] pointer-events-none" />
                   </div>
+                  {formErrors.assignee && <p className="text-red-400 text-xs mt-1">Assignee is required</p>}
                 </div>
                 
+                {/* Due Date + Priority */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-1.5">Due Date *</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Due Date *</label>
                     <input 
-                      type="date" 
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 text-gray-700 transition-all" 
+                      type="date"
+                      value={form.dueDate}
+                      onChange={e => updateField('dueDate', e.target.value)}
+                      className={inputCls(!!formErrors.dueDate)}
                     />
+                    {formErrors.dueDate && <p className="text-red-400 text-xs mt-1">Due date is required</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-1.5">Priority</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Priority</label>
                     <div className="relative">
-                      <select className="w-full appearance-none border border-gray-200 rounded-lg pl-3 pr-10 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all">
-                        <option>Medium</option>
-                        <option>High</option>
-                        <option>Critical</option>
-                        <option>Low</option>
+                      <select
+                        value={form.priority}
+                        onChange={e => updateField('priority', e.target.value)}
+                        className={selectCls(false)}
+                      >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
                       </select>
-                      <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)] pointer-events-none" />
                     </div>
                   </div>
                 </div>
 
+                {/* Status + Progress */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-1.5">Status</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Status</label>
                     <div className="relative">
-                      <select className="w-full appearance-none border border-gray-200 rounded-lg pl-3 pr-10 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all">
-                        <option>Pending</option>
-                        <option>In Progress</option>
-                        <option>Completed</option>
-                        <option>Overdue</option>
+                      <select
+                        value={form.status}
+                        onChange={e => updateField('status', e.target.value)}
+                        className={selectCls(false)}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="in progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="overdue">Overdue</option>
                       </select>
-                      <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)] pointer-events-none" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-1.5">Completion %</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Completion %</label>
                     <input 
-                      type="number" 
+                      type="number"
+                      min="0"
+                      max="100"
                       placeholder="0"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder-gray-400 transition-all" 
+                      value={form.progress}
+                      onChange={e => updateField('progress', Math.min(100, Math.max(0, Number(e.target.value))))}
+                      className={inputCls(false)}
                     />
                   </div>
                 </div>
 
+                {/* Remarks */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1.5">Remarks</label>
-                  <textarea 
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder-gray-400 min-h-[120px] resize-y transition-all" 
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Remarks</label>
+                  <textarea
+                    value={form.remarks}
+                    onChange={e => updateField('remarks', e.target.value)}
+                    placeholder="Optional notes..."
+                    className={`${inputCls(false)} min-h-[120px] resize-y`}
                   />
                 </div>
               </div>
             </div>
             
-            <div className="p-4 border-t border-gray-100 flex gap-3 mt-auto bg-gray-50/50">
+            {/* Footer buttons */}
+            <div className="p-4 border-t border-[var(--border-color)] flex gap-3 mt-auto bg-[var(--bg-surface)]/50">
               <button 
-                onClick={() => setIsSlideOverOpen(false)} 
-                className="flex-[2] py-2.5 text-sm font-medium bg-[#2563EB] text-white rounded-lg hover:bg-blue-700 transition-all active:scale-[0.98]"
+                onClick={handleSave} 
+                className="flex-[2] py-2.5 text-sm font-semibold bg-[var(--accent)] text-white rounded-lg hover:opacity-90 transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               >
-                Add Task
+                {editingTask ? 'Save Changes' : 'Add Task'}
               </button>
               <button 
-                onClick={() => setIsSlideOverOpen(false)} 
-                className="flex-1 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                onClick={closePanel} 
+                className="flex-1 py-2.5 text-sm font-semibold text-[var(--ink-soft)] bg-transparent border border-[var(--border-color)] rounded-lg hover:bg-[var(--bg-surface)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               >
                 Cancel
               </button>
             </div>
           </div>
         </>
+      )}
+
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <DeleteConfirmModal
+          taskTitle={deleteTarget.title}
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+
+      {/* Toast notifications */}
+      {toasts.length > 0 && (
+        <div className="fixed bottom-6 right-6 z-[80] space-y-3">
+          {toasts.map(toast => (
+            <Toast key={toast.id} toast={toast} onDismiss={() => removeToast(toast.id)} />
+          ))}
+        </div>
       )}
     </PageTransition>
   )

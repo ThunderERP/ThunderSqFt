@@ -1,12 +1,12 @@
 import { Trash2, Plus, ReceiptIndianRupee, Tag, User, Calendar, CreditCard } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import PageHeader from '../components/PageHeader'
-import StatCard from '../components/StatCard'
-import DataTable from '../components/DataTable'
-import StatusBadge from '../components/StatusBadge'
-import Modal from '../components/Modal'
-import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../components/MotionComponents'
+import PageHeader from '../../shared/components/PageHeader'
+import StatCard from '../../shared/components/StatCard'
+import DataTable from '../../shared/components/DataTable'
+import StatusBadge from '../../shared/components/StatusBadge'
+import Modal from '../../shared/components/Modal'
+import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../../shared/components/MotionComponents'
 
 const initialExpensesData = [
   { id: 'EXP-001', description: 'Office Rent', category: 'Operations', vendor: 'Property Management Co', amount: 3500, date: '2024-03-01', status: 'Approved' },
@@ -63,12 +63,12 @@ export default function Expenses() {
   }
 
   const columns = [
-    { key: 'id', label: 'ID', render: (item: any) => <span className="font-medium text-gray-900">{item.id}</span> },
-    { key: 'description', label: 'Description', render: (item: any) => <span className="font-medium">{item.description}</span> },
+    { key: 'id', label: 'ID', render: (item: any) => <span className="font-mono font-medium text-[var(--accent)]">{item.id}</span> },
+    { key: 'description', label: 'Description', render: (item: any) => <span className="font-medium text-[var(--ink)]">{item.description}</span> },
     { key: 'category', label: 'Category', render: (item: any) => <StatusBadge status={item.category} /> },
-    { key: 'vendor', label: 'Vendor' },
-    { key: 'amount', label: 'Amount', render: (item: any) => <span className="font-semibold">₹{item.amount.toLocaleString()}</span> },
-    { key: 'date', label: 'Date' },
+    { key: 'vendor', label: 'Vendor', render: (item: any) => <span className="text-[var(--ink-soft)]">{item.vendor}</span> },
+    { key: 'amount', label: 'Amount', render: (item: any) => <span className="font-mono font-bold text-[var(--gold)]">₹{item.amount.toLocaleString('en-IN')}</span> },
+    { key: 'date', label: 'Date', render: (item: any) => <span className="font-mono text-[var(--ink-soft)]">{item.date}</span> },
     { key: 'status', label: 'Status', render: (item: any) => <StatusBadge status={item.status} /> },
     {
       key: 'actions',
@@ -76,7 +76,7 @@ export default function Expenses() {
       render: (item: any) => (
         <button
           onClick={() => handleDeleteExpense(item.id)}
-          className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+          className="p-2 rounded-lg hover:bg-[var(--danger-soft)] text-[var(--ink-muted)] hover:text-[var(--danger)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
           title="Delete Expense"
         >
           <Trash2 size={16} />
@@ -97,8 +97,8 @@ export default function Expenses() {
         actions={
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl font-medium text-sm shadow-lg transition-all"
-            style={{ background: '#2563EB', boxShadow: '0 8px 24px rgba(37,99,235,0.25)' }}
+            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl font-medium text-sm shadow-lg transition-all bg-[var(--accent)] hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+            style={{ boxShadow: '0 8px 24px rgba(61,127,255,0.25)' }}
           >
             <Plus size={18} />
             Add Expense
@@ -109,8 +109,8 @@ export default function Expenses() {
       {/* KPI Cards */}
       <StaggerContainer className="bento-grid mb-8" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
         <StaggerItem><StatCard label="Total Expenses" value={`₹${totalExpenses.toLocaleString()}`} /></StaggerItem>
-        <StaggerItem><StatCard label="Approved" value={`₹${approvedExpenses.toLocaleString()}`} valueColor="text-emerald-600" /></StaggerItem>
-        <StaggerItem><StatCard label="Pending" value={`₹${pendingExpenses.toLocaleString()}`} valueColor="text-amber-500" /></StaggerItem>
+        <StaggerItem><StatCard label="Approved" value={`₹${approvedExpenses.toLocaleString()}`} valueColor="text-[var(--success)]" /></StaggerItem>
+        <StaggerItem><StatCard label="Pending" value={`₹${pendingExpenses.toLocaleString()}`} valueColor="text-[var(--warning)]" /></StaggerItem>
       </StaggerContainer>
 
       {/* Data Table */}
@@ -130,29 +130,29 @@ export default function Expenses() {
       <Modal isOpen={createModalOpen} onClose={() => setCreateModalOpen(false)} title="Add Expense Record">
         <form onSubmit={handleAddExpense} className="space-y-5">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Description</label>
+            <label className="text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider">Description</label>
             <div className="relative">
-              <ReceiptIndianRupee size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <ReceiptIndianRupee size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
               <input
                 required
                 type="text"
                 placeholder="e.g. Monthly Office Rent"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                className="w-full pl-11 pr-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none rounded-2xl text-sm transition-all"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Category</label>
+              <label className="text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider">Category</label>
               <div className="relative">
-                <Tag size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Tag size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary-500 transition-all outline-none appearance-none"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none rounded-2xl text-sm transition-all appearance-none"
                 >
                   <option>Operations</option>
                   <option>Technology</option>
@@ -163,16 +163,16 @@ export default function Expenses() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Vendor</label>
+              <label className="text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider">Vendor</label>
               <div className="relative">
-                <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
                 <input
                   required
                   type="text"
                   placeholder="Vendor Name"
                   value={formData.vendor}
                   onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none rounded-2xl text-sm transition-all"
                 />
               </div>
             </div>
@@ -180,29 +180,29 @@ export default function Expenses() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Amount (₹)</label>
+              <label className="text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider">Amount (₹)</label>
               <div className="relative">
-                <CreditCard size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <CreditCard size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
                 <input
                   required
                   type="number"
                   placeholder="0.00"
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none rounded-2xl text-sm transition-all font-mono"
                 />
               </div>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Date</label>
+              <label className="text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider">Date</label>
               <div className="relative">
-                <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
                 <input
                   required
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none rounded-2xl text-sm transition-all font-mono"
                 />
               </div>
             </div>
@@ -210,7 +210,8 @@ export default function Expenses() {
 
           <button
             type="submit"
-            className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold text-sm hover:bg-gray-800 transition-all shadow-xl shadow-gray-900/10 mt-4"
+            className="w-full py-4 bg-[var(--accent)] text-white rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all shadow-lg mt-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+            style={{ boxShadow: '0 8px 24px rgba(61,127,255,0.25)' }}
           >
             Save Expense
           </button>

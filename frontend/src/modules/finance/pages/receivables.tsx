@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Eye, IndianRupee, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
-import PageHeader from '../components/PageHeader'
-import StatCard from '../components/StatCard'
-import DataTable from '../components/DataTable'
-import StatusBadge from '../components/StatusBadge'
-import Modal from '../components/Modal'
-import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../components/MotionComponents'
+import PageHeader from '../../shared/components/PageHeader'
+import StatCard from '../../shared/components/StatCard'
+import DataTable from '../../shared/components/DataTable'
+import StatusBadge from '../../shared/components/StatusBadge'
+import Modal from '../../shared/components/Modal'
+import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../../shared/components/MotionComponents'
 
 const initialReceivablesData = [
   { invoiceId: 'INV-2024-156', customer: 'Acme Corporation', dueDate: '2024-04-15', amount: 12500, status: 'Pending' },
@@ -37,19 +37,19 @@ export default function Receivables() {
   }
 
   const columns = [
-    { key: 'invoiceId', label: 'Invoice ID', render: (item: any) => <span className="font-medium text-gray-900">{item.invoiceId}</span> },
+    { key: 'invoiceId', label: 'Invoice ID', render: (item: any) => <span className="font-mono font-medium text-[var(--ink)]">{item.invoiceId}</span> },
     { key: 'customer', label: 'Customer Name' },
     {
       key: 'dueDate',
       label: 'Due Date',
       render: (item: any) => (
-        <div className="flex items-center gap-2 text-gray-600">
-          <Calendar size={14} className="text-gray-400" />
+        <div className="flex items-center gap-2 text-[var(--ink-soft)] font-mono">
+          <Calendar size={14} className="text-[var(--ink-muted)]" />
           {item.dueDate}
         </div>
       ),
     },
-    { key: 'amount', label: 'Amount', render: (item: any) => <span className="font-semibold">₹{item.amount.toLocaleString()}</span> },
+    { key: 'amount', label: 'Amount', render: (item: any) => <span className="font-mono font-bold text-[var(--gold)]">₹{item.amount.toLocaleString('en-IN')}</span> },
     { key: 'status', label: 'Status', render: (item: any) => <StatusBadge status={item.status} /> },
     {
       key: 'actions',
@@ -61,7 +61,7 @@ export default function Receivables() {
               setSelectedInvoice(item)
               setViewModalOpen(true)
             }}
-            className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-primary-500 transition-colors"
+            className="p-2 rounded-lg hover:bg-[var(--bg-hover)] text-[var(--ink-muted)] hover:text-[var(--accent)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
           >
             <Eye size={16} />
           </button>
@@ -71,7 +71,7 @@ export default function Receivables() {
                 setSelectedInvoice(item)
                 setPayModalOpen(true)
               }}
-              className="p-2 rounded-lg hover:bg-emerald-50 text-gray-400 hover:text-emerald-500 transition-colors"
+              className="p-2 rounded-lg hover:bg-[var(--success-soft)] text-[var(--ink-muted)] hover:text-[var(--success)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
             >
               <IndianRupee size={16} />
             </button>
@@ -113,24 +113,24 @@ export default function Receivables() {
       <Modal isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} title="Invoice Details">
         {selectedInvoice && (
           <div className="space-y-4">
-            <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500">Invoice ID</span>
-              <span className="font-medium">{selectedInvoice.invoiceId}</span>
+            <div className="flex justify-between border-b border-[var(--border-color)] pb-4">
+              <span className="text-[var(--ink-soft)]">Invoice ID</span>
+              <span className="font-mono font-medium text-[var(--accent)]">{selectedInvoice.invoiceId}</span>
             </div>
-            <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500">Customer</span>
-              <span className="font-medium">{selectedInvoice.customer}</span>
+            <div className="flex justify-between border-b border-[var(--border-color)] pb-4">
+              <span className="text-[var(--ink-soft)]">Customer</span>
+              <span className="font-medium text-[var(--ink)]">{selectedInvoice.customer}</span>
             </div>
-            <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500">Amount</span>
-              <span className="font-semibold text-lg">₹{selectedInvoice.amount.toLocaleString()}</span>
+            <div className="flex justify-between border-b border-[var(--border-color)] pb-4">
+              <span className="text-[var(--ink-soft)]">Amount</span>
+              <span className="font-mono font-bold text-lg text-[var(--gold)]">₹{selectedInvoice.amount.toLocaleString('en-IN')}</span>
             </div>
-            <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500">Due Date</span>
-              <span>{selectedInvoice.dueDate}</span>
+            <div className="flex justify-between border-b border-[var(--border-color)] pb-4">
+              <span className="text-[var(--ink-soft)]">Due Date</span>
+              <span className="font-mono text-[var(--ink)]">{selectedInvoice.dueDate}</span>
             </div>
             <div className="flex justify-between pt-2">
-              <span className="text-gray-500">Status</span>
+              <span className="text-[var(--ink-soft)]">Status</span>
               <StatusBadge status={selectedInvoice.status} />
             </div>
           </div>
@@ -141,20 +141,20 @@ export default function Receivables() {
       <Modal isOpen={payModalOpen} onClose={() => setPayModalOpen(false)} title="Record Payment">
         {selectedInvoice && (
           <div className="space-y-6">
-            <p className="text-gray-600">
-              Are you sure you want to mark invoice <span className="font-semibold text-gray-900">{selectedInvoice.invoiceId}</span> as paid?
-              This will record a payment of <span className="font-semibold text-emerald-600">₹{selectedInvoice.amount.toLocaleString()}</span>.
+            <p className="text-[var(--ink-soft)]">
+              Are you sure you want to mark invoice <span className="font-mono font-semibold text-[var(--accent)]">{selectedInvoice.invoiceId}</span> as paid?
+              This will record a payment of <span className="font-mono font-semibold text-[var(--success)]">₹{selectedInvoice.amount.toLocaleString('en-IN')}</span>.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setPayModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-[var(--ink)] bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-lg hover:bg-[var(--bg-hover)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleMarkAsPaid}
-                className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white bg-[var(--success)] rounded-lg hover:bg-emerald-600 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
               >
                 Confirm Payment
               </button>

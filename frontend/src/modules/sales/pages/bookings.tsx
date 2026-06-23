@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { PageTransition, StaggerContainer, StaggerItem } from '../../shared/components/MotionComponents'
-import { ChevronDown, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, Search, ShieldCheck, CreditCard, Clock, CheckCircle } from 'lucide-react'
+import { Plus, X, Search, ShieldCheck, CreditCard, Clock, CheckCircle, MapPin, Calendar, User, Home } from 'lucide-react'
+import DataTable from '../../shared/components/DataTable'
+import StatusBadge from '../../shared/components/StatusBadge'
+import StatCard from '../../shared/components/StatCard'
+import DetailSlideOver from '../../shared/components/DetailSlideOver'
 
 const mockBookings = [
   { id: '1', customer: 'Raghav Mishra', project: 'Worli Zenith', unit: 'B-1204', amount: '₹50L', date: '2026-06-19', stage: 'booking', payment: 'partial', executive: 'Anita Joshi', branch: 'Mumbai Central' },
@@ -27,56 +31,26 @@ function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 }
 
-const avatarColors = ['bg-blue-100 text-blue-700','bg-emerald-100 text-emerald-700','bg-purple-100 text-purple-700','bg-orange-100 text-orange-700','bg-pink-100 text-pink-700']
+const avatarColors = [
+  'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+  'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+  'bg-purple-500/20 text-purple-400 border border-purple-500/30',
+  'bg-orange-500/20 text-orange-400 border border-orange-500/30',
+  'bg-pink-500/20 text-pink-400 border border-pink-500/30',
+]
+
 function getAvatarColor(name: string) {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-  return avatarColors[Math.abs(h) % avatarColors.length];
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return avatarColors[Math.abs(hash) % avatarColors.length]
 }
 
 export default function Bookings() {
   const [isSlideOverOpen, setIsSlideOverOpen] = useState(false)
+  const [selectedBooking, setSelectedBooking] = useState<typeof mockBookings[0] | null>(null)
   const [search, setSearch] = useState('')
   const [stageFilter, setStageFilter] = useState('All Stages')
   const [paymentFilter, setPaymentFilter] = useState('All Payments')
-
-  type SortField = 'customer' | 'project' | 'unit' | 'amount' | 'date' | 'stage' | 'payment' | 'executive' | 'branch' | null;
-  const [sortField, setSortField] = useState<SortField>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      if (sortDirection === 'asc') setSortDirection('desc');
-      else setSortField(null);
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const getSortIcon = (field: SortField) => {
-    if (sortField !== field) return <ArrowUpDown size={14} className="text-gray-300" />;
-    return sortDirection === 'asc' ? <ArrowUp size={14} className="text-[#2563EB]" /> : <ArrowDown size={14} className="text-[#2563EB]" />;
-  };
-
-  const getStageStyle = (stage: string) => {
-    switch (stage) {
-      case 'booking': return 'bg-yellow-100 text-yellow-700'
-      case 'agreement': return 'bg-blue-100 text-blue-700'
-      case 'registration': return 'bg-purple-100 text-purple-700'
-      case 'completed': return 'bg-emerald-100 text-emerald-700'
-      default: return 'bg-gray-100 text-gray-700'
-    }
-  }
-
-  const getPaymentStyle = (payment: string) => {
-    switch (payment) {
-      case 'pending': return 'bg-red-100 text-red-700'
-      case 'partial': return 'bg-yellow-100 text-yellow-700'
-      case 'completed': return 'bg-emerald-100 text-emerald-700'
-      default: return 'bg-gray-100 text-gray-700'
-    }
-  }
 
   let filteredBookings = mockBookings.filter(b => {
     const matchesSearch = b.customer.toLowerCase().includes(search.toLowerCase()) || b.project.toLowerCase().includes(search.toLowerCase()) || b.unit.toLowerCase().includes(search.toLowerCase());
@@ -85,22 +59,6 @@ export default function Bookings() {
     return matchesSearch && matchesStage && matchesPayment;
   });
 
-  if (sortField) {
-    filteredBookings.sort((a, b) => {
-      const aVal = a[sortField] || '';
-      const bVal = b[sortField] || '';
-      if (sortField === 'amount') {
-        const numA = parseInt(aVal.replace(/[^0-9]/g, '')) || 0;
-        const numB = parseInt(bVal.replace(/[^0-9]/g, '')) || 0;
-        return sortDirection === 'asc' ? numA - numB : numB - numA;
-      }
-      const comparison = String(aVal).localeCompare(String(bVal));
-      return sortDirection === 'asc' ? comparison : -comparison;
-    });
-  }
-
-  // Live Computed Stats
-  const totalBookings = mockBookings.length
   const bookingStage = mockBookings.filter(b => b.stage === 'booking').length
   const agreementStage = mockBookings.filter(b => b.stage === 'agreement').length
   const registrationStage = mockBookings.filter(b => b.stage === 'registration').length
@@ -109,350 +67,343 @@ export default function Bookings() {
   const totalValueLakhs = mockBookings.reduce((sum, b) => sum + (parseInt(b.amount.replace(/[^0-9]/g, '')) || 0), 0)
   const totalValueCr = (totalValueLakhs / 100).toFixed(2)
 
+  const bookingColumns = [
+    {
+      key: 'customer',
+      label: 'Customer',
+      render: (item: any) => (
+        <div className="flex items-center gap-3">
+          <span className={`avatar-circle text-[10px] font-bold ${getAvatarColor(item.customer)}`}>
+            {getInitials(item.customer)}
+          </span>
+          <span className="font-bold text-[var(--ink)]">{item.customer}</span>
+        </div>
+      )
+    },
+    { 
+      key: 'project', 
+      label: 'Project',
+      render: (item: any) => <span className="text-[var(--ink-soft)]">{item.project}</span>
+    },
+    { 
+      key: 'unit', 
+      label: 'Unit',
+      render: (item: any) => <span className="text-[var(--ink-soft)] font-mono">{item.unit}</span>
+    },
+    {
+      key: 'amount',
+      label: 'Amount',
+      render: (item: any) => <span className="font-mono text-[var(--gold)] font-bold">{item.amount}</span>
+    },
+    {
+      key: 'date',
+      label: 'Booking Date',
+      render: (item: any) => <span className="font-mono text-[var(--ink-soft)]">{item.date}</span>
+    },
+    {
+      key: 'stage',
+      label: 'Stage',
+      render: (item: any) => <StatusBadge status={item.stage} />
+    },
+    {
+      key: 'payment',
+      label: 'Payment',
+      render: (item: any) => <StatusBadge status={item.payment} />
+    },
+    { 
+      key: 'executive', 
+      label: 'Executive',
+      render: (item: any) => <span className="text-[var(--ink-soft)]">{item.executive}</span>
+    },
+    { 
+      key: 'branch', 
+      label: 'Branch',
+      render: (item: any) => <span className="text-[var(--ink-soft)]">{item.branch}</span>
+    }
+  ]
+
   return (
     <PageTransition>
-      <div className="p-6 max-w-[1600px] mx-auto space-y-6">
+      <div className="space-y-6 text-left">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Bookings</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage and track property bookings pipeline</p>
+            <h1 className="page-title font-display">Bookings</h1>
+            <p className="page-subtitle">Manage and track property bookings pipeline</p>
           </div>
           <button 
             onClick={() => setIsSlideOverOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#2563EB] text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all active:scale-[0.97]"
+            className="btn-primary flex items-center gap-2 self-start sm:self-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
           >
             <Plus size={16} /> New Booking
           </button>
         </div>
 
         {/* Stat Cards */}
-        <StaggerContainer className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 flex items-center gap-4 shadow-sm">
-              <div className="w-11 h-11 rounded-xl bg-yellow-50 text-yellow-600 flex items-center justify-center shrink-0">
-                <Clock size={22} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Booking</p>
-                <h3 className="text-2xl counter-value text-yellow-600 mt-0.5">{bookingStage}</h3>
-              </div>
-            </div>
+            <StatCard
+              label="Booking"
+              value={bookingStage}
+              icon={<Clock size={16} />}
+              valueColor="text-[var(--warning)]"
+              subtitle="Initial token stage"
+            />
           </StaggerItem>
-          
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 flex items-center gap-4 shadow-sm">
-              <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                <CreditCard size={22} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Agreement</p>
-                <h3 className="text-2xl counter-value text-blue-600 mt-0.5">{agreementStage}</h3>
-              </div>
-            </div>
+            <StatCard
+              label="Agreement"
+              value={agreementStage}
+              icon={<CreditCard size={16} />}
+              valueColor="text-[var(--accent)]"
+              subtitle="Drafting agreements"
+            />
           </StaggerItem>
-          
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 flex items-center gap-4 shadow-sm">
-              <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-                <ShieldCheck size={22} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Registration</p>
-                <h3 className="text-2xl counter-value text-purple-600 mt-0.5">{registrationStage}</h3>
-              </div>
-            </div>
+            <StatCard
+              label="Registration"
+              value={registrationStage}
+              icon={<ShieldCheck size={16} />}
+              valueColor="text-[var(--violet)]"
+              subtitle="Property registration"
+            />
           </StaggerItem>
-
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 flex items-center gap-4 shadow-sm">
-              <div className="w-11 h-11 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
-                <CheckCircle size={22} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Completed</p>
-                <h3 className="text-2xl counter-value text-green-600 mt-0.5">{completedStage}</h3>
-              </div>
-            </div>
+            <StatCard
+              label="Completed"
+              value={completedStage}
+              icon={<CheckCircle size={16} />}
+              valueColor="text-[var(--success)]"
+              subtitle="Bookings finalized"
+            />
           </StaggerItem>
-
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-5 flex items-center gap-4 shadow-sm">
-              <div className="w-11 h-11 rounded-xl bg-indigo-50 text-[#2563EB] flex items-center justify-center shrink-0">
-                <span className="font-bold text-lg">₹</span>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Value</p>
-                <h3 className="text-2xl counter-value text-[#2563EB] mt-0.5">₹{totalValueCr} Cr</h3>
-              </div>
-            </div>
+            <StatCard
+              label="Total Value"
+              value={`₹${totalValueCr} Cr`}
+              icon={<span className="font-bold text-sm">₹</span>}
+              valueColor="text-[var(--gold)]"
+              subtitle="Cumulated deal values"
+            />
           </StaggerItem>
         </StaggerContainer>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative max-w-xs w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+        <div className="flex flex-wrap items-center gap-3 p-4 card">
+          <div className="relative min-w-[240px] flex-1 sm:flex-initial">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" size={14} />
             <input 
               type="text" 
               placeholder="Search by customer, project, unit..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)} 
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all bg-white" 
+              className="w-full pl-9 pr-4 py-2 rounded-lg text-xs bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:outline-none focus:border-[var(--accent)] transition-all placeholder-[var(--ink-muted)]" 
             />
           </div>
-          <div className="relative w-44">
-            <select 
-              value={stageFilter} 
-              onChange={(e) => setStageFilter(e.target.value)} 
-              className="w-full appearance-none border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all"
-            >
-              <option>All Stages</option>
-              <option>Booking</option>
-              <option>Agreement</option>
-              <option>Registration</option>
-              <option>Completed</option>
-            </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          </div>
-          <div className="relative w-44">
-            <select 
-              value={paymentFilter} 
-              onChange={(e) => setPaymentFilter(e.target.value)} 
-              className="w-full appearance-none border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all"
-            >
-              <option>All Payments</option>
-              <option>Pending</option>
-              <option>Partial</option>
-              <option>Completed</option>
-            </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          </div>
+
+          <select 
+            value={stageFilter} 
+            onChange={(e) => setStageFilter(e.target.value)} 
+            className="px-3 py-2 rounded-lg text-xs bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:outline-none focus:border-[var(--accent)] transition-all cursor-pointer font-semibold"
+          >
+            <option value="All Stages">All Stages</option>
+            <option value="Booking">Booking</option>
+            <option value="Agreement">Agreement</option>
+            <option value="Registration">Registration</option>
+            <option value="Completed">Completed</option>
+          </select>
+
+          <select 
+            value={paymentFilter} 
+            onChange={(e) => setPaymentFilter(e.target.value)} 
+            className="px-3 py-2 rounded-lg text-xs bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:outline-none focus:border-[var(--accent)] transition-all cursor-pointer font-semibold"
+          >
+            <option value="All Payments">All Payments</option>
+            <option value="Pending">Pending</option>
+            <option value="Partial">Partial</option>
+            <option value="Completed">Completed</option>
+          </select>
+
           {(stageFilter !== 'All Stages' || paymentFilter !== 'All Payments' || search) && (
             <button 
               onClick={() => { setStageFilter('All Stages'); setPaymentFilter('All Payments'); setSearch(''); }}
-              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"
+              className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent)]/80 transition-colors flex items-center gap-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
             >
-              <X size={12} /> Clear
+              <X size={12} /> Clear Filters
             </button>
           )}
-          <span className="text-xs font-medium text-gray-400 ml-auto">{filteredBookings.length} bookings</span>
+          <span className="text-xs font-bold text-[var(--ink-muted)] ml-auto font-mono">{filteredBookings.length} bookings</span>
         </div>
 
         {/* Table */}
-        <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-600">
-              <thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-100">
-                <tr>
-                  <th className="px-6 py-4 whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('customer')}>
-                    <div className="flex items-center gap-2">Customer {getSortIcon('customer')}</div>
-                  </th>
-                  <th className="px-6 py-4 whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('project')}>
-                    <div className="flex items-center gap-2">Project {getSortIcon('project')}</div>
-                  </th>
-                  <th className="px-6 py-4 whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('unit')}>
-                    <div className="flex items-center gap-2">Unit {getSortIcon('unit')}</div>
-                  </th>
-                  <th className="px-6 py-4 whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('amount')}>
-                    <div className="flex items-center gap-2">Amount {getSortIcon('amount')}</div>
-                  </th>
-                  <th className="px-6 py-4 whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('date')}>
-                    <div className="flex items-center gap-2">Booking Date {getSortIcon('date')}</div>
-                  </th>
-                  <th className="px-6 py-4 whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('stage')}>
-                    <div className="flex items-center gap-2">Stage {getSortIcon('stage')}</div>
-                  </th>
-                  <th className="px-6 py-4 whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('payment')}>
-                    <div className="flex items-center gap-2">Payment {getSortIcon('payment')}</div>
-                  </th>
-                  <th className="px-6 py-4 whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('executive')}>
-                    <div className="flex items-center gap-2">Executive {getSortIcon('executive')}</div>
-                  </th>
-                  <th className="px-6 py-4 whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors select-none" onClick={() => handleSort('branch')}>
-                    <div className="flex items-center gap-2">Branch {getSortIcon('branch')}</div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filteredBookings.map((booking, idx) => (
-                  <tr key={booking.id} className="anim-row hover:bg-gray-50/50 transition-all group" style={{ '--i': idx } as React.CSSProperties}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <span className={`avatar-circle ${getAvatarColor(booking.customer)}`}>
-                          {getInitials(booking.customer)}
-                        </span>
-                        <span className="font-semibold text-gray-900">{booking.customer}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 whitespace-nowrap">{booking.project}</td>
-                    <td className="px-6 py-4 font-semibold text-gray-700 whitespace-nowrap">{booking.unit}</td>
-                    <td className="px-6 py-4 font-bold text-gray-900 whitespace-nowrap">{booking.amount}</td>
-                    <td className="px-6 py-4 text-gray-500 whitespace-nowrap">{booking.date}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wide ${getStageStyle(booking.stage)}`}>
-                        {booking.stage}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wide ${getPaymentStyle(booking.payment)}`}>
-                        {booking.payment}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 whitespace-nowrap">{booking.executive}</td>
-                    <td className="px-6 py-4 text-gray-500 whitespace-nowrap">{booking.branch}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {filteredBookings.length === 0 && (
-            <div className="py-16 text-center">
-              <div className="float-bounce inline-block mb-4">
-                <ShieldCheck size={40} className="text-gray-300" />
+        <DataTable
+          columns={bookingColumns}
+          data={filteredBookings}
+          searchPlaceholder="Filter bookings..."
+          onRowClick={(booking: any) => setSelectedBooking(booking)}
+        />
+
+        {/* Booking Detail Slide-Over */}
+        <DetailSlideOver
+          isOpen={!!selectedBooking}
+          onClose={() => setSelectedBooking(null)}
+          title={selectedBooking?.customer || ''}
+          subtitle={`Booking #${selectedBooking?.id || ''}`}
+          avatar={
+            selectedBooking ? (
+              <span className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-sm font-bold font-mono ${getAvatarColor(selectedBooking.customer)}`}>
+                {getInitials(selectedBooking.customer)}
+              </span>
+            ) : undefined
+          }
+          statusBadge={
+            selectedBooking ? (
+              <div className="flex items-center gap-2">
+                <StatusBadge status={selectedBooking.stage} />
+                <StatusBadge status={selectedBooking.payment} />
               </div>
-              <p className="text-gray-500 font-medium">No bookings found</p>
-              <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
-            </div>
-          )}
-        </div>
+            ) : undefined
+          }
+          fields={selectedBooking ? [
+            { label: 'Customer Name', value: selectedBooking.customer },
+            { label: 'Booking ID', value: (
+              <span className="font-mono text-xs">#BK-{selectedBooking.id}</span>
+            )},
+            { label: 'Project', value: (
+              <span className="flex items-center gap-1.5">
+                <Home size={12} className="text-[var(--ink-muted)]" />
+                {selectedBooking.project}
+              </span>
+            )},
+            { label: 'Unit', value: (
+              <span className="font-mono font-semibold">{selectedBooking.unit}</span>
+            )},
+            { label: 'Amount', value: (
+              <span className="font-mono font-bold text-[var(--gold)]">
+                {selectedBooking.amount}
+              </span>
+            )},
+            { label: 'Booking Date', value: (
+              <span className="flex items-center gap-1.5 font-mono">
+                <Calendar size={12} className="text-[var(--ink-muted)]" />
+                {selectedBooking.date}
+              </span>
+            )},
+            { label: 'Current Stage', value: <StatusBadge status={selectedBooking.stage} /> },
+            { label: 'Payment Status', value: <StatusBadge status={selectedBooking.payment} /> },
+            { label: 'Sales Executive', value: (
+              <span className="flex items-center gap-1.5">
+                <User size={12} className="text-[var(--ink-muted)]" />
+                {selectedBooking.executive}
+              </span>
+            )},
+            { label: 'Branch', value: (
+              <span className="flex items-center gap-1.5">
+                <MapPin size={12} className="text-[var(--ink-muted)]" />
+                {selectedBooking.branch}
+              </span>
+            )},
+          ] : []}
+        />
       </div>
 
       {/* Slide-over Panel */}
       {isSlideOverOpen && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-            onClick={() => setIsSlideOverOpen(false)}
-          />
-          <div className="fixed inset-y-0 right-0 w-full md:w-[450px] bg-white shadow-2xl z-50 flex flex-col" style={{ animation: 'rowSlideIn 0.3s ease-out' }}>
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">New Booking</h2>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end" onClick={() => setIsSlideOverOpen(false)}>
+          <div className="w-full max-w-[450px] bg-[var(--bg-card)] border-l border-[var(--border-color)] h-full shadow-2xl flex flex-col text-left" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-[var(--border-color)]">
+              <h2 className="text-lg font-bold text-[var(--ink)] font-display">New Booking</h2>
               <button 
                 onClick={() => setIsSlideOverOpen(false)}
-                className="p-1.5 border border-blue-100 hover:bg-blue-50 rounded-full transition-colors text-blue-500"
+                className="p-1.5 rounded-full border border-[var(--border-color)] text-[var(--ink-soft)] hover:bg-[var(--bg-hover)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1.5">Customer Name *</label>
-                  <input 
-                    type="text" 
-                    placeholder="Full name"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder-gray-400 transition-all" 
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1.5">Project Name *</label>
-                  <input 
-                    type="text" 
-                    placeholder="Project"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder-gray-400 transition-all" 
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1.5">Unit Number *</label>
-                  <input 
-                    type="text" 
-                    placeholder="A-101"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder-gray-400 transition-all" 
-                  />
-                </div>
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Customer Name *</label>
+                <input type="text" placeholder="Full name" className="input-field" />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Project Name *</label>
+                <input type="text" placeholder="Project" className="input-field" />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Unit Number *</label>
+                <input type="text" placeholder="A-101" className="input-field" />
+              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-1.5">Booking Amount (₹) *</label>
-                    <input 
-                      type="number" 
-                      placeholder="Amount"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder-gray-400 transition-all" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-1.5">Booking Date *</label>
-                    <input 
-                      type="date" 
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 text-gray-700 bg-white transition-all" 
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-1.5">Status</label>
-                    <div className="relative">
-                      <select className="w-full appearance-none border border-gray-200 rounded-lg pl-3 pr-10 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all">
-                        <option>booking</option>
-                        <option>agreement</option>
-                        <option>registration</option>
-                        <option>completed</option>
-                      </select>
-                      <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-1.5">Payment Status</label>
-                    <div className="relative">
-                      <select className="w-full appearance-none border border-gray-200 rounded-lg pl-3 pr-10 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all">
-                        <option>Pending</option>
-                        <option>partial</option>
-                        <option>completed</option>
-                      </select>
-                      <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1.5">Sales Executive *</label>
-                  <div className="relative">
-                    <select className="w-full appearance-none border border-gray-200 rounded-lg pl-3 pr-10 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all">
-                      <option>Select executive</option>
-                      <option>Rohit Verma</option>
-                      <option>Anita Joshi</option>
-                    </select>
-                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  </div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Booking Amount (₹) *</label>
+                  <input type="number" placeholder="Amount" className="input-field" />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1.5">Branch</label>
-                  <div className="relative">
-                    <select className="w-full appearance-none border border-gray-200 rounded-lg pl-3 pr-10 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all">
-                      <option>Select branch</option>
-                      <option>Mumbai Central</option>
-                      <option>Bangalore South</option>
-                      <option>Pune HQ</option>
-                    </select>
-                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  </div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Booking Date *</label>
+                  <input type="date" className="input-field bg-[var(--bg-surface)] text-[var(--ink)] cursor-pointer" />
                 </div>
+              </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Status</label>
+                  <select className="input-field bg-[var(--bg-surface)] text-[var(--ink)] cursor-pointer">
+                    <option value="booking">booking</option>
+                    <option value="agreement">agreement</option>
+                    <option value="registration">registration</option>
+                    <option value="completed">completed</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Payment Status</label>
+                  <select className="input-field bg-[var(--bg-surface)] text-[var(--ink)] cursor-pointer">
+                    <option value="pending">Pending</option>
+                    <option value="partial">partial</option>
+                    <option value="completed">completed</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Sales Executive *</label>
+                <select className="input-field bg-[var(--bg-surface)] text-[var(--ink)] cursor-pointer">
+                  <option>Select executive</option>
+                  <option>Rohit Verma</option>
+                  <option>Anita Joshi</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5">Branch</label>
+                <select className="input-field bg-[var(--bg-surface)] text-[var(--ink)] cursor-pointer">
+                  <option>Select branch</option>
+                  <option>Mumbai Central</option>
+                  <option>Bangalore South</option>
+                  <option>Pune HQ</option>
+                </select>
               </div>
             </div>
             
-            <div className="p-4 border-t border-gray-100 flex gap-3 mt-auto bg-gray-50/50">
+            <div className="p-4 border-t border-[var(--border-color)] flex gap-3 mt-auto bg-[var(--bg-surface)]/20">
               <button 
                 onClick={() => setIsSlideOverOpen(false)} 
-                className="flex-[2] py-2.5 text-sm font-medium bg-[#2563EB] text-white rounded-lg hover:bg-blue-700 transition-all active:scale-[0.98]"
+                className="btn-primary flex-1"
               >
                 Create Booking
               </button>
               <button 
                 onClick={() => setIsSlideOverOpen(false)} 
-                className="flex-1 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="btn-secondary flex-1"
               >
                 Cancel
               </button>
             </div>
           </div>
-        </>
+        </div>
       )}
     </PageTransition>
   )

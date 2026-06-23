@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import PageHeader from '../../shared/components/PageHeader'
 import { PageTransition } from '../../shared/components/MotionComponents'
-import { getPulseColor } from '../../shared/utils/statusColor'
 import StatCard from '../../shared/components/StatCard'
+import StatusBadge from '../../shared/components/StatusBadge'
 import { useAuth } from '../../auth/context/AuthContext'
 import { useHR } from '../../../hooks/useHR'
 
@@ -65,20 +65,20 @@ export default function Performance() {
   if (loading && data.length === 0) {
     return (
       <div className="w-full space-y-6">
-        <div className="h-10 bg-gray-200 rounded w-1/3 animate-pulse mb-6"></div>
+        <div className="h-10 bg-[var(--bg-surface)] rounded w-1/3 animate-pulse mb-6"></div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-28 rounded-2xl bg-white border border-gray-100 shadow-card animate-pulse"></div>
+            <div key={i} className="h-28 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] animate-pulse"></div>
           ))}
         </div>
-        <div className="h-96 rounded-2xl bg-white border border-gray-100 shadow-card animate-pulse"></div>
+        <div className="h-96 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] animate-pulse"></div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="neu-card p-12 text-center text-red-600 font-semibold">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-12 text-center text-[var(--danger)] font-semibold rounded-lg">
         {error}
       </div>
     )
@@ -92,116 +92,120 @@ export default function Performance() {
   const totalPayout = data.reduce((acc, emp) => acc + calculateTotal(emp.baseSalary, emp.bookings), 0)
   const totalIncentivePaid = data.reduce((acc, emp) => acc + (emp.bookings * incentiveRate), 0)
 
+  const getGradeType = (health: 'good' | 'waiting' | 'stuck') => {
+    if (health === 'good') return 'success'
+    if (health === 'waiting') return 'warning'
+    return 'danger'
+  }
+
   return (
     <PageTransition>
-      <PageHeader
-        title="Performance & Incentives"
-        subtitle="Track sales executive conversion scores, performance grades, and compute payouts"
-      />
-
-      {/* Stats Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard
-          label="Total Incentive Payout"
-          value={can('view:commission-data') ? `₹${totalIncentivePaid.toLocaleString('en-IN')}` : '—'}
-          subtitle={can('view:commission-data') ? "Aggregate booking commissions" : "Restricted access"}
-          valueColor="text-[var(--status-good)]"
-          pulseNumeral={false}
+      <div className="p-6 max-w-[1600px] mx-auto space-y-6 text-[var(--ink)]">
+        <PageHeader
+          title="Performance & Incentives"
+          subtitle="Track sales executive conversion scores, performance grades, and compute payouts"
         />
 
-        <StatCard
-          label="Total Combined Payout"
-          value={can('view:commission-data') ? `₹${totalPayout.toLocaleString('en-IN')}` : '—'}
-          subtitle={can('view:commission-data') ? "Combined base salary + incentives" : "Restricted access"}
-          valueColor="text-[var(--ink)]"
-          pulseNumeral={false}
-        />
+        {/* Stats Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <StatCard
+            label="Total Incentive Payout"
+            value={can('view:commission-data') ? `₹${totalIncentivePaid.toLocaleString('en-IN')}` : '—'}
+            subtitle={can('view:commission-data') ? "Aggregate booking commissions" : "Restricted access"}
+            valueColor="text-[var(--success)]"
+          />
 
-        {/* Configuration Card styled in line with StatCard but interactive */}
-        {can('view:commission-data') && (
-          <div className="neu-card p-6 flex flex-col justify-between bg-white">
-            <span className="text-xs uppercase font-semibold text-[var(--ink-soft)] tracking-wider mb-2">Incentive Commission Rate</span>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-semibold text-[var(--ink-soft)]">₹</span>
-                <input
-                  type="number"
-                  value={incentiveRate}
-                  onChange={(e) => setIncentiveRate(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                  className="w-24 bg-[var(--canvas)] text-[var(--ink)] font-bold text-sm px-2 py-1 rounded border border-[var(--hairline)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] pulse-numeral"
-                />
-                <span className="text-xs text-[var(--ink-soft)] ml-1">/ Booking</span>
+          <StatCard
+            label="Total Combined Payout"
+            value={can('view:commission-data') ? `₹${totalPayout.toLocaleString('en-IN')}` : '—'}
+            subtitle={can('view:commission-data') ? "Combined base salary + incentives" : "Restricted access"}
+            valueColor="text-[var(--ink)]"
+          />
+
+          {/* Configuration Card styled in line with StatCard but interactive */}
+          {can('view:commission-data') ? (
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-6 flex flex-col justify-between rounded-lg shadow-card text-[var(--ink)]">
+              <span className="text-[10px] uppercase font-bold text-[var(--ink-soft)] tracking-wider mb-2">Incentive Commission Rate</span>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-semibold text-[var(--ink-soft)] font-mono">₹</span>
+                  <input
+                    type="number"
+                    value={incentiveRate}
+                    onChange={(e) => setIncentiveRate(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                    className="w-28 bg-[var(--bg-surface)] text-[var(--ink)] font-bold text-sm px-2 py-1 rounded border border-[var(--border-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                  />
+                  <span className="text-xs text-[var(--ink-soft)] ml-1 font-mono">/ Booking</span>
+                </div>
+                <span className="text-xs text-[var(--ink-muted)] mt-1 font-mono">Configurable commission per conversion</span>
               </div>
-              <span className="text-xs text-[var(--ink-soft)] mt-1">Configurable commission per conversion</span>
             </div>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-6 flex flex-col justify-center rounded-lg shadow-card text-center text-[var(--ink-muted)]">
+              <span className="text-xs italic">Incentive configuration restricted</span>
+            </div>
+          )}
+        </div>
 
-      {/* Performance Grid Table */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-bold text-[var(--ink)]">Performance & Earnings Calculator</h3>
+        {/* Performance Grid Table */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-[var(--ink)] font-display">Performance & Earnings Calculator</h3>
 
-        <div className="neu-card overflow-hidden bg-white">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--hairline)] text-left text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider">
-                  <th className="px-6 py-4">Employee</th>
-                  <th className="px-6 py-4">Role</th>
-                  <th className="px-6 py-4 text-center">Conversion Rate</th>
-                  <th className="px-6 py-4 text-center">Grade</th>
-                  <th className="px-6 py-4 text-right">Base Salary</th>
-                  <th className="px-6 py-4 text-center">Bookings Done</th>
-                  {can('view:commission-data') && (
-                    <>
-                      <th className="px-6 py-4 text-right">Incentive Earned</th>
-                      <th className="px-6 py-4 text-right">Total Payout</th>
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody className="hairline-divide">
-                {data.map((emp) => {
-                  const gradeDetail = getGradeDetail(emp.conversionRate)
-                  const colors = getPulseColor(gradeDetail.health)
-                  const incEarned = emp.bookings * incentiveRate
-                  const finalPayout = calculateTotal(emp.baseSalary, emp.bookings)
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl shadow-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[var(--border-color)] bg-[var(--bg-surface)]/30 text-left text-[10px] font-bold text-[var(--ink-soft)] uppercase tracking-wider">
+                    <th className="px-6 py-4">Employee</th>
+                    <th className="px-6 py-4">Role</th>
+                    <th className="px-6 py-4 text-center">Conversion Rate</th>
+                    <th className="px-6 py-4 text-center">Grade</th>
+                    <th className="px-6 py-4 text-right">Base Salary</th>
+                    <th className="px-6 py-4 text-center">Bookings Done</th>
+                    {can('view:commission-data') && (
+                      <>
+                        <th className="px-6 py-4 text-right">Incentive Earned</th>
+                        <th className="px-6 py-4 text-right">Total Payout</th>
+                      </>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border-color)]">
+                  {data.map((emp) => {
+                    const gradeDetail = getGradeDetail(emp.conversionRate)
+                    const incEarned = emp.bookings * incentiveRate
+                    const finalPayout = calculateTotal(emp.baseSalary, emp.bookings)
 
-                  return (
-                    <tr key={emp.name} className="hover:bg-[var(--canvas)]/50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-[var(--ink)]">{emp.name}</td>
-                      <td className="px-6 py-4 text-[var(--ink-soft)] font-medium text-xs">{emp.role}</td>
-                      <td className="px-6 py-4 text-center font-bold text-[var(--ink)]"><span className="pulse-numeral">{emp.conversionRate}%</span></td>
-                      <td className="px-6 py-4 text-center">
-                        <span
-                          className="px-2.5 py-0.5 rounded-lg text-xs font-bold inline-block animate-none"
-                          style={{ backgroundColor: colors.bg, color: colors.color }}
-                        >
-                          {gradeDetail.grade} ({gradeDetail.label})
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right text-[var(--ink-soft)] font-medium">
-                        ₹<span className="pulse-numeral">{emp.baseSalary.toLocaleString('en-IN')}</span>
-                      </td>
-                      <td className="px-6 py-4 text-center text-[var(--ink)] font-bold">
-                        <span className="pulse-numeral">{emp.bookings}</span>
-                      </td>
-                      {can('view:commission-data') && (
-                        <>
-                          <td className="px-6 py-4 text-right text-[var(--status-good)] font-bold">
-                            ₹<span className="pulse-numeral">{incEarned.toLocaleString('en-IN')}</span>
-                          </td>
-                          <td className="px-6 py-4 text-right text-[var(--ink)] font-extrabold">
-                            ₹<span className="pulse-numeral">{finalPayout.toLocaleString('en-IN')}</span>
-                          </td>
-                        </>
-                      )}
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                    return (
+                      <tr key={emp.name} className="hover:bg-[var(--bg-hover)]/40 transition-colors">
+                        <td className="px-6 py-4 font-semibold text-[var(--ink)]">{emp.name}</td>
+                        <td className="px-6 py-4 text-[var(--ink-soft)] font-semibold text-xs">{emp.role}</td>
+                        <td className="px-6 py-4 text-center font-bold text-[var(--ink)] font-mono">{emp.conversionRate}%</td>
+                        <td className="px-6 py-4 text-center">
+                          <StatusBadge status={`${gradeDetail.grade} (${gradeDetail.label})`} domain={getGradeType(gradeDetail.health)} />
+                        </td>
+                        <td className="px-6 py-4 text-right text-[var(--ink-soft)] font-semibold font-mono">
+                          ₹{emp.baseSalary.toLocaleString('en-IN')}
+                        </td>
+                        <td className="px-6 py-4 text-center text-[var(--ink)] font-bold font-mono">
+                          {emp.bookings}
+                        </td>
+                        {can('view:commission-data') && (
+                          <>
+                            <td className="px-6 py-4 text-right text-[var(--success)] font-bold font-mono">
+                              ₹{incEarned.toLocaleString('en-IN')}
+                            </td>
+                            <td className="px-6 py-4 text-right text-[var(--ink)] font-bold font-mono">
+                              ₹{finalPayout.toLocaleString('en-IN')}
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

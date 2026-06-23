@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { PageTransition, StaggerContainer, StaggerItem } from '../../shared/components/MotionComponents'
-import PageHeader from '../../finance/components/PageHeader'
+import PageHeader from '../../shared/components/PageHeader'
+import StatCard from '../../shared/components/StatCard'
+import StatusBadge from '../../shared/components/StatusBadge'
 import { Zap, MessageSquare, Mail, Bell, Plus, ToggleLeft, ToggleRight, Search, X, ChevronDown } from 'lucide-react'
 
 const mockRules = [
@@ -24,10 +26,10 @@ export default function AutomationTriggers() {
   }
 
   const getChannelIcon = (channel: string) => {
-    if (channel === 'whatsapp') return <MessageSquare size={16} className="text-green-500" />
-    if (channel === 'email') return <Mail size={16} className="text-blue-500" />
-    if (channel === 'sms') return <MessageSquare size={16} className="text-purple-500" />
-    return <Bell size={16} className="text-amber-500" />
+    if (channel === 'whatsapp') return <MessageSquare size={16} className="text-[var(--success)]" />
+    if (channel === 'email') return <Mail size={16} className="text-[var(--accent)]" />
+    if (channel === 'sms') return <MessageSquare size={16} className="text-[var(--violet)]" />
+    return <Bell size={16} className="text-[var(--gold)]" />
   }
 
   const filteredRules = rules.filter(r => {
@@ -49,12 +51,12 @@ export default function AutomationTriggers() {
 
   return (
     <PageTransition>
-      <div className="space-y-6 p-6 max-w-[1600px] mx-auto">
+      <div className="space-y-6 p-6 max-w-[1600px] mx-auto text-[var(--ink)]">
         <PageHeader 
           title="Automation Center" 
           subtitle="Manage automated triggers, notifications, and workflows."
           actions={
-            <button className="bg-[#2563EB] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2 active:scale-[0.97]">
+            <button className="bg-[var(--accent)] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-sm flex items-center gap-2 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">
               <Plus size={16} /> New Rule
             </button>
           }
@@ -63,65 +65,45 @@ export default function AutomationTriggers() {
         {/* Stats Cards */}
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-6 flex flex-col items-center justify-center text-center shadow-sm">
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4 text-blue-600">
-                <Zap size={24} />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900">{activeCount} Active</h3>
-              <p className="text-sm text-gray-500 mt-1">Rules actively running</p>
-            </div>
+            <StatCard label="Active Rules" value={String(activeCount)} subtitle="Actively running workflows" valueColor="text-[var(--success)]" />
           </StaggerItem>
-          
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-6 flex flex-col items-center justify-center text-center shadow-sm">
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4 text-gray-500">
-                <ToggleLeft size={24} />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900">{pausedCount} Paused</h3>
-              <p className="text-sm text-gray-500 mt-1">Rules currently paused</p>
-            </div>
+            <StatCard label="Paused Rules" value={String(pausedCount)} subtitle="Currently paused" valueColor="text-[var(--ink-soft)]" />
           </StaggerItem>
-
           <StaggerItem>
-            <div className="stat-card bg-white border border-gray-100 rounded-xl p-6 flex flex-col items-center justify-center text-center shadow-sm">
-              <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-4 text-[#2563EB]">
-                <Bell size={24} />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900">{rules.length} Total</h3>
-              <p className="text-sm text-gray-500 mt-1">Defined workflows</p>
-            </div>
+            <StatCard label="Total Rules" value={String(rules.length)} subtitle="Defined workflows" valueColor="text-[var(--accent)]" />
           </StaggerItem>
         </StaggerContainer>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative max-w-xs w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" size={16} />
             <input 
               type="text" 
               placeholder="Search rules..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)} 
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all bg-white" 
+              className="w-full pl-9 pr-4 py-2 border border-[var(--border-color)] rounded-lg text-sm bg-[var(--bg-surface)] text-[var(--ink)] placeholder-[var(--ink-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]" 
             />
           </div>
           <div className="relative w-44">
             <select 
               value={statusFilter} 
               onChange={(e) => setStatusFilter(e.target.value)} 
-              className="w-full appearance-none border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all"
+              className="w-full appearance-none border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm text-[var(--ink-soft)] bg-[var(--bg-surface)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
             >
               <option>All Statuses</option>
               <option>Active</option>
               <option>Paused</option>
             </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)] pointer-events-none" />
           </div>
           <div className="relative w-44">
             <select 
               value={channelFilter} 
               onChange={(e) => setChannelFilter(e.target.value)} 
-              className="w-full appearance-none border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all"
+              className="w-full appearance-none border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm text-[var(--ink-soft)] bg-[var(--bg-surface)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
             >
               <option>All Channels</option>
               <option value="whatsapp">WhatsApp</option>
@@ -129,55 +111,53 @@ export default function AutomationTriggers() {
               <option value="sms">SMS</option>
               <option value="app">App Notification</option>
             </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)] pointer-events-none" />
           </div>
           {(statusFilter !== 'All Statuses' || channelFilter !== 'All Channels' || search) && (
             <button 
               onClick={() => { setStatusFilter('All Statuses'); setChannelFilter('All Channels'); setSearch(''); }}
-              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"
+              className="text-xs font-semibold text-[var(--accent)] hover:underline transition-colors flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
             >
               <X size={12} /> Clear
             </button>
           )}
-          <span className="text-xs font-medium text-gray-400 ml-auto">{filteredRules.length} rules</span>
+          <span className="text-xs font-medium text-[var(--ink-muted)] font-mono ml-auto">{filteredRules.length} rules</span>
         </div>
 
         {/* Active Workflows List */}
-        <div className="platform-card overflow-hidden bg-white border border-gray-100 rounded-xl shadow-sm">
-          <div className="p-6 border-b border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800">Active Workflows</h3>
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl shadow-card overflow-hidden">
+          <div className="p-6 border-b border-[var(--border-color)] bg-[var(--bg-surface)]/20">
+            <h3 className="text-lg font-bold text-[var(--ink)] font-display uppercase tracking-wider">Active Workflows</h3>
           </div>
-          <StaggerContainer className="divide-y divide-gray-100">
+          <StaggerContainer className="divide-y divide-[var(--border-color)]">
             {filteredRules.map((rule, idx) => (
               <StaggerItem key={rule.id}>
                 <div 
-                  className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-gray-50/50 transition-colors anim-row"
+                  className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-[var(--bg-hover)]/40 transition-colors"
                   style={{ '--i': idx } as React.CSSProperties}
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h4 className="font-bold text-gray-900 text-lg">{rule.name}</h4>
-                      <span className={`px-2.5 py-0.5 rounded-md text-xs font-semibold ${rule.active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'}`}>
-                        {rule.active ? 'Active' : 'Paused'}
-                      </span>
+                      <h4 className="font-bold text-[var(--ink)] text-lg font-display">{rule.name}</h4>
+                      <StatusBadge status={rule.active ? 'Active' : 'Paused'} />
                     </div>
                     <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-sm mt-3">
-                      <div className="flex items-center gap-2 text-gray-700 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
-                        <span className="font-semibold text-xs text-gray-400 uppercase tracking-wider">WHEN</span> {rule.trigger}
+                      <div className="flex items-center gap-2 text-[var(--ink-soft)] bg-[var(--bg-surface)] px-3 py-1.5 rounded-lg border border-[var(--border-color)]/60 font-mono text-xs">
+                        <span className="font-bold text-[9px] text-[var(--ink-muted)] uppercase tracking-wider">WHEN</span> {rule.trigger}
                       </div>
-                      <span className="hidden md:block text-gray-300">→</span>
-                      <div className="flex items-center gap-2 text-gray-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-                        <span className="font-semibold text-xs text-blue-500 uppercase tracking-wider">THEN</span> {getChannelIcon(rule.channel)} {rule.action}
+                      <span className="hidden md:block text-[var(--ink-muted)]">→</span>
+                      <div className="flex items-center gap-2 text-[var(--accent)] bg-[var(--accent-soft)] px-3 py-1.5 rounded-lg border border-[var(--accent)]/10 text-xs">
+                        <span className="font-bold text-[9px] uppercase tracking-wider">THEN</span> {getChannelIcon(rule.channel)} {rule.action}
                       </div>
                     </div>
                   </div>
                   <button 
                     onClick={() => toggleRule(rule.id)}
-                    className="mt-4 md:mt-0 active:scale-95 transition-all outline-none"
+                    className="mt-4 md:mt-0 active:scale-95 transition-all outline-none rounded focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                   >
                     {rule.active ? 
-                      <ToggleRight size={40} className="text-[#2563EB]" /> : 
-                      <ToggleLeft size={40} className="text-gray-300" />
+                      <ToggleRight size={40} className="text-[var(--accent)]" /> : 
+                      <ToggleLeft size={40} className="text-[var(--ink-muted)]" />
                     }
                   </button>
                 </div>
@@ -186,12 +166,12 @@ export default function AutomationTriggers() {
           </StaggerContainer>
 
           {filteredRules.length === 0 && (
-            <div className="py-16 text-center">
-              <div className="float-bounce inline-block mb-4">
-                <Zap size={40} className="text-gray-300" />
+            <div className="py-16 text-center text-[var(--ink-muted)] bg-[var(--bg-card)]">
+              <div className="inline-block mb-4">
+                <Zap size={40} />
               </div>
-              <p className="text-gray-500 font-medium">No automation rules found</p>
-              <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
+              <p className="text-[var(--ink-soft)] font-medium">No automation rules found</p>
+              <p className="text-sm text-[var(--ink-muted)] mt-1">Try adjusting your filters</p>
             </div>
           )}
         </div>

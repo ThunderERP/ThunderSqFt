@@ -34,23 +34,27 @@ function SidebarGroup({ label, icon: Icon, isActive, isLocked = false, isCollaps
   }, [isActive])
 
   if (isCollapsed) {
-    // In collapsed mode, render as a simplified icon trigger (tooltip style, or just click to open parent)
     const isAnyChildActive = children.some(c => location.pathname === c.path)
     return (
       <div className="relative group mb-2">
         <button
-          className={`w-12 h-12 mx-auto flex items-center justify-center rounded-xl transition-all duration-200 border-l-4 ${
+          className={`w-12 h-12 mx-auto flex items-center justify-center rounded-xl transition-all duration-200 relative ${
             isLocked
-              ? 'opacity-40 cursor-not-allowed text-ink-muted border-transparent'
+              ? 'opacity-40 cursor-not-allowed text-ink-muted'
               : isAnyChildActive 
-                ? 'border-accent text-accent bg-accent-soft' 
-                : 'border-transparent text-ink-soft hover:text-ink hover:bg-bg-hover'
+                ? 'text-accent bg-accent-soft' 
+                : 'text-ink-soft hover:text-ink hover:bg-bg-hover'
           }`}
           title={label}
         >
+          {isAnyChildActive && (
+            <div 
+              className="absolute left-0 top-0 bottom-0 w-[2px]" 
+              style={{ background: 'var(--active-gradient-x)' }} 
+            />
+          )}
           <Icon size={20} />
         </button>
-        {/* Simple popover for children when collapsed */}
         {!isLocked && (
           <div className="absolute left-16 top-0 hidden group-hover:block z-50 bg-bg-card border border-border-color rounded-lg shadow-xl py-2 w-48">
             <p className="px-4 py-1.5 text-xs font-bold text-ink border-b border-border-color mb-1 uppercase tracking-wider">{label}</p>
@@ -60,12 +64,22 @@ function SidebarGroup({ label, icon: Icon, isActive, isLocked = false, isCollaps
                 to={child.path}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `block px-4 py-2 text-xs font-medium transition-all ${
+                  `block px-4 py-2 text-xs font-medium transition-all relative ${
                     isActive ? 'text-accent bg-accent-soft font-semibold' : 'text-ink-soft hover:text-ink hover:bg-bg-hover'
                   }`
                 }
               >
-                {child.label}
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <div 
+                        className="absolute left-0 top-0 bottom-0 w-[2px]" 
+                        style={{ background: 'var(--active-gradient-x)' }} 
+                      />
+                    )}
+                    {child.label}
+                  </>
+                )}
               </NavLink>
             ))}
           </div>
@@ -79,14 +93,20 @@ function SidebarGroup({ label, icon: Icon, isActive, isLocked = false, isCollaps
       <button
         onClick={() => !isLocked && setIsOpen(!isOpen)}
         disabled={isLocked}
-        className={`w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition-all duration-200 group border-l-4 rounded-lg ${
+        className={`w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition-all duration-200 group rounded-lg relative ${
           isLocked
-            ? 'opacity-40 cursor-not-allowed text-ink-soft border-transparent'
+            ? 'opacity-40 cursor-not-allowed text-ink-soft'
             : isActive 
-              ? 'border-accent text-accent bg-accent-soft' 
-              : 'border-transparent text-ink-soft hover:text-ink hover:bg-bg-hover'
+              ? 'text-accent bg-accent-soft' 
+              : 'text-ink-soft hover:text-ink hover:bg-bg-hover'
         }`}
       >
+        {isActive && (
+          <div 
+            className="absolute left-0 top-0 bottom-0 w-[2px]" 
+            style={{ background: 'var(--active-gradient-x)' }} 
+          />
+        )}
         <div className="flex items-center gap-3">
           <Icon size={18} className={isActive ? 'text-accent' : 'text-ink-soft group-hover:text-ink'} />
           <span>{label}</span>
@@ -116,12 +136,18 @@ function SidebarGroup({ label, icon: Icon, isActive, isLocked = false, isCollaps
                     <NavLink
                       to={child.path}
                       onClick={onClose}
-                      className={`block px-3 py-2 text-[13px] font-medium transition-all rounded-md ${
+                      className={`block px-3 py-2 text-[13px] font-medium transition-all rounded-md relative ${
                         isChildActive
-                          ? 'text-accent font-semibold bg-accent-soft border-l-2 border-accent -ml-[1px]'
-                          : 'text-ink-soft hover:text-ink hover:bg-bg-hover border-l-2 border-transparent -ml-[1px]'
+                          ? 'text-accent font-semibold bg-accent-soft'
+                          : 'text-ink-soft hover:text-ink hover:bg-bg-hover'
                       }`}
                     >
+                      {isChildActive && (
+                        <div 
+                          className="absolute left-0 top-1.5 bottom-1.5 w-[2px]" 
+                          style={{ background: 'var(--active-gradient-x)' }} 
+                        />
+                      )}
                       {child.label}
                     </NavLink>
                   </li>
@@ -139,12 +165,41 @@ function ChevronDown({ size, className }: { size: number; className?: string }) 
   return <ChevronRight size={size} className={`transform rotate-90 ${className || ''}`} />
 }
 
+interface SidebarNavLinkProps {
+  to: string
+  end?: boolean
+  onClick?: () => void
+  icon: any
+  label: string
+  isCollapsed: boolean
+  iconClass: string
+  navLinkClass: (props: { isActive: boolean }) => string
+}
+
+function SidebarNavLink({ to, end, onClick, icon: Icon, label, isCollapsed, iconClass, navLinkClass }: SidebarNavLinkProps) {
+  return (
+    <NavLink to={to} end={end} onClick={onClick} className={navLinkClass} aria-label={`Go to ${label}`}>
+      {({ isActive }) => (
+        <div className="flex items-center gap-3 w-full justify-center lg:justify-start relative">
+          {isActive && (
+            <div 
+              className="absolute left-[-8px] top-[-12px] bottom-[-12px] w-[2px]" 
+              style={{ background: 'var(--active-gradient-y)' }} 
+            />
+          )}
+          <Icon size={18} className={isActive ? 'text-accent' : iconClass} />
+          {!isCollapsed && <span>{label}</span>}
+        </div>
+      )}
+    </NavLink>
+  )
+}
+
 export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const { activeRole, setActiveRole, isModuleVisible } = useRole()
   const { currentUser } = useAuth()
   const location = useLocation()
   
-  // Collapse state for desktop
   const [isCollapsed, setIsCollapsed] = useState(() => {
     return localStorage.getItem('sidebar-collapsed') === 'true'
   })
@@ -153,16 +208,15 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
     localStorage.setItem('sidebar-collapsed', String(isCollapsed))
   }, [isCollapsed])
 
-  // Handle active groupings
   const isSalesActive = location.pathname.startsWith('/sales')
   const isBankingActive = location.pathname.startsWith('/banking')
   const isHrActive = location.pathname.startsWith('/hr')
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-all group border-l-4 rounded-lg ${
+    `flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-all group rounded-lg relative ${
       isActive
-        ? 'active border-accent text-accent bg-accent-soft'
-        : 'border-transparent text-ink-soft hover:text-ink hover:bg-bg-hover'
+        ? 'active text-accent bg-accent-soft'
+        : 'text-ink-soft hover:text-ink hover:bg-bg-hover'
     }`
 
   const iconClass = "group-hover:text-ink group-[.active]:text-accent text-ink-soft"
@@ -174,7 +228,6 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
 
   return (
     <>
-      {/* Mobile Drawer Overlay */}
       {isOpen && (
         <div 
           className="fixed inset-0 z-40 lg:hidden bg-black/40 backdrop-blur-sm transition-opacity"
@@ -195,7 +248,6 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Top Header Section */}
         <div className="h-[72px] px-4 border-b border-border-color flex items-center justify-between overflow-hidden">
           <AnimatePresence mode="wait">
             {!isCollapsed && (
@@ -219,7 +271,6 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
             </div>
           )}
 
-          {/* Collapse/Expand Toggle Button (only on desktop) */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="hidden lg:flex p-1.5 rounded-lg border border-border-color hover:bg-bg-hover text-ink-soft hover:text-ink shrink-0 ml-2"
@@ -228,7 +279,6 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
             {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
 
-          {/* Mobile close button */}
           <button 
             onClick={onClose} 
             className="lg:hidden p-1.5 hover:bg-bg-hover text-ink-soft hover:text-ink"
@@ -238,7 +288,6 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           </button>
         </div>
 
-        {/* Role Preview Selection (only when expanded) */}
         {!isCollapsed && (
           <div className="px-4 py-4 border-b border-border-color shrink-0">
             <label className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block mb-1.5">
@@ -263,132 +312,42 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           </div>
         )}
 
-        {/* Navigation List */}
         <nav className="flex-1 px-2 py-4 overflow-y-auto space-y-1 scrollbar-thin">
+          <SidebarNavLink to="/" end onClick={onClose} icon={LayoutDashboard} label="Dashboard" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
           
-          <NavLink to="/" end onClick={onClose} className={navLinkClass} aria-label="Go to Dashboard">
-            {({ isActive }) => (
-              <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                <LayoutDashboard size={18} className={isActive ? 'text-accent' : iconClass} />
-                {!isCollapsed && <span>Dashboard</span>}
-              </div>
-            )}
-          </NavLink>
-
           {isModuleVisible('ceo') && (
             <>
-              <NavLink to="/ceo" end onClick={onClose} className={navLinkClass} aria-label="Go to CEO Dashboard">
-                {({ isActive }) => (
-                  <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                    <LayoutDashboard size={18} className={isActive ? 'text-accent' : iconClass} />
-                    {!isCollapsed && <span>CEO Dashboard</span>}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink to="/ceo/branches" onClick={onClose} className={navLinkClass} aria-label="Go to Branch Comparison">
-                {({ isActive }) => (
-                  <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                    <Landmark size={18} className={isActive ? 'text-accent' : iconClass} />
-                    {!isCollapsed && <span>Branch Comparison</span>}
-                  </div>
-                )}
-              </NavLink>
+              <SidebarNavLink to="/ceo" end onClick={onClose} icon={LayoutDashboard} label="CEO Dashboard" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
+              <SidebarNavLink to="/ceo/branches" onClick={onClose} icon={Landmark} label="Branch Comparison" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
             </>
           )}
 
           {isModuleVisible('salesCrm') && (
             <>
-              <NavLink to="/sales/leads" onClick={onClose} className={navLinkClass} aria-label="Go to Leads">
-                {({ isActive }) => (
-                  <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                    <Users size={18} className={isActive ? 'text-accent' : iconClass} />
-                    {!isCollapsed && <span>Leads</span>}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink to="/sales/follow-ups" onClick={onClose} className={navLinkClass} aria-label="Go to Follow-ups">
-                {({ isActive }) => (
-                  <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                    <CheckSquare size={18} className={isActive ? 'text-accent' : iconClass} />
-                    {!isCollapsed && <span>Follow-ups</span>}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink to="/sales/visits" onClick={onClose} className={navLinkClass} aria-label="Go to Site Visits">
-                {({ isActive }) => (
-                  <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                    <CheckSquare size={18} className={isActive ? 'text-accent' : iconClass} />
-                    {!isCollapsed && <span>Site Visits</span>}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink to="/sales/bookings" onClick={onClose} className={navLinkClass} aria-label="Go to Bookings">
-                {({ isActive }) => (
-                  <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                    <ShieldAlert size={18} className={isActive ? 'text-accent' : iconClass} />
-                    {!isCollapsed && <span>Bookings</span>}
-                  </div>
-                )}
-              </NavLink>
+              <SidebarNavLink to="/sales/leads" onClick={onClose} icon={Users} label="Leads" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
+              <SidebarNavLink to="/sales/follow-ups" onClick={onClose} icon={CheckSquare} label="Follow-ups" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
+              <SidebarNavLink to="/sales/visits" onClick={onClose} icon={CheckSquare} label="Site Visits" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
+              <SidebarNavLink to="/sales/bookings" onClick={onClose} icon={ShieldAlert} label="Bookings" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
             </>
           )}
 
           {isModuleVisible('bankingCrm') && (
-            <NavLink to="/banking/loans" onClick={onClose} className={navLinkClass} aria-label="Go to Loans">
-              {({ isActive }) => (
-                <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                  <Landmark size={18} className={isActive ? 'text-accent' : iconClass} />
-                  {!isCollapsed && <span>Loans</span>}
-                </div>
-              )}
-            </NavLink>
+            <SidebarNavLink to="/banking/loans" onClick={onClose} icon={Landmark} label="Loans" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
           )}
 
           {isModuleVisible('tasks') && (
-            <NavLink to="/tasks" onClick={onClose} className={navLinkClass} aria-label="Go to Tasks">
-              {({ isActive }) => (
-                <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                  <CheckSquare size={18} className={isActive ? 'text-accent' : iconClass} />
-                  {!isCollapsed && <span>Tasks</span>}
-                </div>
-              )}
-            </NavLink>
+            <SidebarNavLink to="/tasks" onClick={onClose} icon={CheckSquare} label="Tasks" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
           )}
 
           {isModuleVisible('hr') && (
-            <NavLink to="/hr/directory" onClick={onClose} className={navLinkClass} aria-label="Go to Employees">
-              {({ isActive }) => (
-                <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                  <Users size={18} className={isActive ? 'text-accent' : iconClass} />
-                  {!isCollapsed && <span>Employees</span>}
-                </div>
-              )}
-            </NavLink>
+            <SidebarNavLink to="/hr/directory" onClick={onClose} icon={Users} label="Employees" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
           )}
 
           {isModuleVisible('automation') && (
-            <NavLink to="/automation" onClick={onClose} className={navLinkClass} aria-label="Go to Automation">
-              {({ isActive }) => (
-                <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                  <Zap size={18} className={isActive ? 'text-accent' : iconClass} />
-                  {!isCollapsed && <span>Automation</span>}
-                </div>
-              )}
-            </NavLink>
+            <SidebarNavLink to="/automation" onClick={onClose} icon={Zap} label="Automation" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
           )}
 
-          <NavLink to="/settings" onClick={onClose} className={navLinkClass} aria-label="Go to Settings">
-            {({ isActive }) => (
-              <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-                <Settings2 size={18} className={isActive ? 'text-accent' : iconClass} />
-                {!isCollapsed && <span>Settings</span>}
-              </div>
-            )}
-          </NavLink>
+          <SidebarNavLink to="/settings" onClick={onClose} icon={Settings2} label="Settings" isCollapsed={isCollapsed} iconClass={iconClass} navLinkClass={navLinkClass} />
         </nav>
 
         {/* Footer User Profile Badge */}

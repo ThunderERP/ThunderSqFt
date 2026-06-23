@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import PageHeader from '../../shared/components/PageHeader'
 import { PageTransition } from '../../shared/components/MotionComponents'
-import { getPulseColor } from '../../shared/utils/statusColor'
 import StatCard from '../../shared/components/StatCard'
 import { useHR } from '../../../hooks/useHR'
 
@@ -52,20 +51,20 @@ export default function Attendance() {
   if (loading && attendance.length === 0) {
     return (
       <div className="w-full space-y-6">
-        <div className="h-10 bg-gray-200 rounded w-1/3 animate-pulse mb-6"></div>
+        <div className="h-10 bg-[var(--bg-surface)] rounded w-1/3 animate-pulse mb-6"></div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-28 rounded-2xl bg-white border border-gray-100 shadow-card animate-pulse"></div>
+            <div key={i} className="h-28 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] animate-pulse"></div>
           ))}
         </div>
-        <div className="h-96 rounded-2xl bg-white border border-gray-100 shadow-card animate-pulse"></div>
+        <div className="h-96 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] animate-pulse"></div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="neu-card p-12 text-center text-red-600 font-semibold">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-12 text-center text-[var(--danger)] font-semibold rounded-lg">
         {error}
       </div>
     )
@@ -88,114 +87,122 @@ export default function Attendance() {
 
   const getStatusStyles = (status: 'Present' | 'Absent' | 'Half-day' | 'Off') => {
     if (status === 'Off') {
-      return { backgroundColor: 'var(--canvas)', color: 'var(--ink-soft)' }
+      return { backgroundColor: 'var(--bg-surface)', color: 'var(--ink-muted)', borderColor: 'var(--border-color)' }
     }
-    const health = status === 'Present' ? 'good' : status === 'Half-day' ? 'waiting' : 'stuck'
-    const colors = getPulseColor(health)
-    return { backgroundColor: colors.bg, color: colors.color }
+    if (status === 'Present') {
+      return { backgroundColor: 'var(--success-soft)', color: 'var(--success)', borderColor: 'rgba(46, 207, 139, 0.2)' }
+    }
+    if (status === 'Half-day') {
+      return { backgroundColor: 'var(--warning-soft)', color: 'var(--warning)', borderColor: 'rgba(242, 184, 75, 0.2)' }
+    }
+    // Absent
+    return { backgroundColor: 'var(--danger-soft)', color: 'var(--danger)', borderColor: 'rgba(255, 107, 107, 0.2)' }
   }
 
   return (
     <PageTransition>
-      <PageHeader
-        title="Employee Daily Attendance"
-        subtitle="Manage check-ins, leaves, and daily working hours grid"
-      />
-
-      {/* Stats row for Selected Day */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard
-          label={`Present Today (Day ${selectedDay})`}
-          value={presentCount.toString()}
-          subtitle="Checked-in employees"
-          valueColor="text-[var(--status-good)]"
+      <div className="p-6 max-w-[1600px] mx-auto space-y-6 text-[var(--ink)]">
+        <PageHeader
+          title="Employee Daily Attendance"
+          subtitle="Manage check-ins, leaves, and daily working hours grid"
         />
 
-        <StatCard
-          label="Absent Today"
-          value={absentCount.toString()}
-          subtitle="Awaiting notifications or leaves"
-          valueColor="text-[var(--status-stuck)]"
-        />
+        {/* Stats row for Selected Day */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <StatCard
+            label={`Present Today (Day ${selectedDay})`}
+            value={presentCount.toString()}
+            subtitle="Checked-in employees"
+            valueColor="text-[var(--success)]"
+          />
 
-        <StatCard
-          label="Half-day Today"
-          value={halfDayCount.toString()}
-          subtitle="Partial shifts recorded"
-          valueColor="text-[var(--status-wait)]"
-        />
-      </div>
+          <StatCard
+            label="Absent Today"
+            value={absentCount.toString()}
+            subtitle="Awaiting notifications or leaves"
+            valueColor="text-[var(--danger)]"
+          />
 
-      {/* Attendance Board Grid */}
-      <div className="neu-card p-6 bg-white overflow-x-auto">
-        <div className="min-w-[1000px]">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-[var(--ink)] text-sm">
-              June 2026 Monthly Grid
-            </h3>
-            <div className="flex gap-4 text-xs font-bold text-[var(--ink-soft)]">
-              <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-good)' }}></span> Present
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-wait)' }}></span> Half-day
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-stuck)' }}></span> Absent
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--hairline)' }}></span> Off
-              </span>
+          <StatCard
+            label="Half-day Today"
+            value={halfDayCount.toString()}
+            subtitle="Partial shifts recorded"
+            valueColor="text-[var(--warning)]"
+          />
+        </div>
+
+        {/* Attendance Board Grid */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-6 rounded-lg shadow-card overflow-x-auto">
+          <div className="min-w-[1000px] space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-[var(--ink)] text-sm font-display uppercase tracking-wider">
+                June 2026 Monthly Grid
+              </h3>
+              <div className="flex gap-4 text-xs font-bold text-[var(--ink-soft)] font-mono">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded bg-[var(--success-soft)] border border-[var(--success)]/20"></span> Present
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded bg-[var(--warning-soft)] border border-[var(--warning)]/20"></span> Half-day
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded bg-[var(--danger-soft)] border border-[var(--danger)]/20"></span> Absent
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded bg-[var(--bg-surface)] border border-[var(--border-color)]"></span> Off
+                </span>
+              </div>
             </div>
-          </div>
 
-          <table className="w-full text-center border-collapse">
-            <thead>
-              <tr className="border-b border-[var(--hairline)] text-left text-[11px] font-bold text-[var(--ink-soft)] uppercase tracking-wider">
-                <th className="py-3 pr-4 text-left w-48">Employee</th>
-                {Array.from({ length: 30 }, (_, i) => i + 1).map((d) => (
-                  <th
-                    key={d}
-                    onClick={() => setSelectedDay(d)}
-                    className={`py-3 w-8 cursor-pointer hover:bg-[var(--accent-soft)] rounded transition-colors text-center ${
-                      selectedDay === d ? 'bg-[var(--accent-soft)] text-[var(--accent)] font-extrabold' : 'text-[var(--ink-soft)]'
-                    }`}
-                  >
-                    {d}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="hairline-divide">
-              {attendance.map((record) => (
-                <tr key={record.employeeName} className="hover:bg-[var(--canvas)]/50 transition-colors text-xs text-left">
-                  <td className="py-4 pr-4">
-                    <p className="font-bold text-[var(--ink)] leading-tight">{record.employeeName}</p>
-                    <p className="text-[10px] text-[var(--ink-soft)] mt-0.5">{record.role}</p>
-                  </td>
-                  {Array.from({ length: 30 }, (_, i) => i + 1).map((d) => {
-                    const status = record.days[d]
-                    return (
-                      <td key={d} className="py-4 w-8 text-center">
-                        <select
-                          value={status}
-                          onChange={(e) => handleStatusChange(record.employeeName, d, e.target.value as any)}
-                          className="w-6 h-6 rounded-md font-bold text-[9px] appearance-none text-center cursor-pointer transition-colors border border-transparent focus:outline-none"
-                          style={getStatusStyles(status)}
-                          title={`${record.employeeName} - Day ${d}: ${status}`}
-                        >
-                          <option value="Present">P</option>
-                          <option value="Absent">A</option>
-                          <option value="Half-day">H</option>
-                          <option value="Off">O</option>
-                        </select>
-                      </td>
-                    )
-                  })}
+            <table className="w-full text-center border-collapse">
+              <thead>
+                <tr className="border-b border-[var(--border-color)] text-left text-[10px] font-bold text-[var(--ink-soft)] uppercase tracking-wider">
+                  <th className="py-3 pr-4 text-left w-48 font-display">Employee</th>
+                  {Array.from({ length: 30 }, (_, i) => i + 1).map((d) => (
+                    <th
+                      key={d}
+                      onClick={() => setSelectedDay(d)}
+                      className={`py-2 w-8 cursor-pointer hover:bg-[var(--accent-soft)] rounded transition-all text-center font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                        selectedDay === d ? 'bg-[var(--accent-soft)] text-[var(--accent)] font-extrabold border border-[var(--accent)]/30' : 'text-[var(--ink-soft)]'
+                      }`}
+                    >
+                      {d}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[var(--border-color)]">
+                {attendance.map((record) => (
+                  <tr key={record.employeeName} className="hover:bg-[var(--bg-hover)]/40 transition-colors text-xs text-left">
+                    <td className="py-4 pr-4">
+                      <p className="font-semibold text-[var(--ink)] leading-tight">{record.employeeName}</p>
+                      <p className="text-[10px] text-[var(--ink-soft)] mt-0.5 font-mono">{record.role}</p>
+                    </td>
+                    {Array.from({ length: 30 }, (_, i) => i + 1).map((d) => {
+                      const status = record.days[d]
+                      const cellStyles = getStatusStyles(status)
+                      return (
+                        <td key={d} className="py-4 w-8 text-center">
+                          <select
+                            value={status}
+                            onChange={(e) => handleStatusChange(record.employeeName, d, e.target.value as any)}
+                            className="w-6 h-6 rounded-md font-bold text-[9px] appearance-none text-center cursor-pointer transition-colors border focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
+                            style={cellStyles}
+                            title={`${record.employeeName} - Day ${d}: ${status}`}
+                          >
+                            <option value="Present">P</option>
+                            <option value="Absent">A</option>
+                            <option value="Half-day">H</option>
+                            <option value="Off">O</option>
+                          </select>
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </PageTransition>

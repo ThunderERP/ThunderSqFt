@@ -3,12 +3,12 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import PageHeader from '../components/PageHeader'
-import StatCard from '../components/StatCard'
-import DataTable from '../components/DataTable'
-import StatusBadge from '../components/StatusBadge'
-import Modal from '../components/Modal'
-import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../components/MotionComponents'
+import PageHeader from '../../shared/components/PageHeader'
+import StatCard from '../../shared/components/StatCard'
+import DataTable from '../../shared/components/DataTable'
+import StatusBadge from '../../shared/components/StatusBadge'
+import Modal from '../../shared/components/Modal'
+import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../../shared/components/MotionComponents'
 
 const initialInvoicesData = [
   { invoiceId: 'INV-2024-156', client: 'Acme Corporation', amount: 12500, date: '2024-03-28', dueDate: '2024-04-28', status: 'Paid', email: 'billing@acme.corp' },
@@ -91,11 +91,11 @@ export default function Invoices() {
   }
 
   const columns = [
-    { key: 'invoiceId', label: 'Invoice ID', render: (item: any) => <span className="font-medium text-gray-900">{item.invoiceId}</span> },
+    { key: 'invoiceId', label: 'Invoice ID', render: (item: any) => <span className="font-mono font-medium text-[var(--ink)]">{item.invoiceId}</span> },
     { key: 'client', label: 'Client' },
-    { key: 'amount', label: 'Amount', render: (item: any) => <span className="font-semibold">₹{item.amount.toLocaleString()}</span> },
-    { key: 'date', label: 'Date' },
-    { key: 'dueDate', label: 'Due Date' },
+    { key: 'amount', label: 'Amount', render: (item: any) => <span className="font-mono font-bold text-[var(--gold)]">₹{item.amount.toLocaleString('en-IN')}</span> },
+    { key: 'date', label: 'Date', render: (item: any) => <span className="font-mono">{item.date}</span> },
+    { key: 'dueDate', label: 'Due Date', render: (item: any) => <span className="font-mono">{item.dueDate}</span> },
     { key: 'status', label: 'Status', render: (item: any) => <StatusBadge status={item.status} /> },
     {
       key: 'actions',
@@ -103,7 +103,7 @@ export default function Invoices() {
       render: (item: any) => (
         <button
           onClick={() => { setSelectedInvoice(item); setViewModalOpen(true); }}
-          className="p-2 rounded-lg hover:bg-primary-50 text-gray-400 hover:text-primary-500 transition-colors"
+          className="p-2 rounded-lg hover:bg-[var(--bg-hover)] text-[var(--ink-muted)] hover:text-[var(--accent)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
         >
           <Eye size={16} />
         </button>

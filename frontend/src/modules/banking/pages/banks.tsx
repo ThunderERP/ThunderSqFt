@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { PageTransition, StaggerContainer, StaggerItem } from '../../shared/components/MotionComponents'
-import PageHeader from '../../finance/components/PageHeader'
+import PageHeader from '../../shared/components/PageHeader'
+import StatusBadge from '../../shared/components/StatusBadge'
 import { Plus, Building, Phone, Mail, Clock, IndianRupee, Search, X, ChevronDown } from 'lucide-react'
 
 const mockBanks = [
@@ -38,12 +39,12 @@ export default function BankingPartners() {
 
   return (
     <PageTransition>
-      <div className="space-y-6 p-6 max-w-[1600px] mx-auto">
+      <div className="space-y-6 p-6 max-w-[1600px] mx-auto text-[var(--ink)]">
         <PageHeader 
           title="Banking Partners" 
           subtitle="Manage relationships and offers with partnered financial institutions."
           actions={
-            <button className="bg-[#2563EB] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2 active:scale-[0.97]">
+            <button className="bg-[var(--accent)] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-sm flex items-center gap-2 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">
               <Plus size={16} /> Add Partner
             </button>
           }
@@ -52,37 +53,37 @@ export default function BankingPartners() {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative max-w-xs w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" size={16} />
             <input 
               type="text" 
               placeholder="Search by name, contact or email..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)} 
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all bg-white" 
+              className="w-full pl-9 pr-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all bg-[var(--bg-surface)] text-[var(--ink)] placeholder-[var(--ink-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]" 
             />
           </div>
           <div className="relative w-48">
             <select 
               value={timeFilter} 
               onChange={(e) => setTimeFilter(e.target.value)} 
-              className="w-full appearance-none border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer transition-all"
+              className="w-full appearance-none border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm text-[var(--ink-soft)] bg-[var(--bg-surface)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
             >
               <option>All Durations</option>
               <option>Fast (&lt; 10 Days)</option>
               <option>Medium (10-14 Days)</option>
               <option>Slow (&gt; 14 Days)</option>
             </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)] pointer-events-none" />
           </div>
           {(timeFilter !== 'All Durations' || search) && (
             <button 
               onClick={() => { setTimeFilter('All Durations'); setSearch(''); }}
-              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"
+              className="text-xs font-medium text-[var(--accent)] hover:underline transition-all flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
             >
               <X size={12} /> Clear
             </button>
           )}
-          <span className="text-xs font-medium text-gray-400 ml-auto">{filteredBanks.length} partners</span>
+          <span className="text-xs font-medium text-[var(--ink-muted)] ml-auto font-mono">{filteredBanks.length} partners</span>
         </div>
 
         {/* Partners Grid */}
@@ -90,7 +91,7 @@ export default function BankingPartners() {
           {filteredBanks.map((bank, idx) => (
             <StaggerItem key={bank.id}>
               <div 
-                className="platform-card bg-white border border-gray-100 p-6 flex flex-col h-full card-lift anim-card"
+                className="bg-[var(--bg-card)] border border-[var(--border-color)] p-6 rounded-lg shadow-card hover:shadow-hover hover:border-[var(--border-hover)] flex flex-col h-full transition-all group"
                 style={{ '--i': idx } as React.CSSProperties}
               >
                 <div className="flex items-start gap-4 mb-6">
@@ -98,57 +99,57 @@ export default function BankingPartners() {
                     {bank.name.substring(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900">{bank.name}</h3>
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 mt-1">
-                      Active Partner
-                    </span>
+                    <h3 className="text-lg font-bold text-[var(--ink)] font-display">{bank.name}</h3>
+                    <div className="mt-1">
+                      <StatusBadge status="Active" />
+                    </div>
                   </div>
                 </div>
 
                 <div className="space-y-3 mb-6 flex-1">
                   <div className="flex items-center gap-3 text-sm">
-                    <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center">
-                      <Building size={14} className="text-gray-500" />
+                    <div className="w-8 h-8 rounded-full bg-[var(--bg-surface)] flex items-center justify-center">
+                      <Building size={14} className="text-[var(--ink-soft)]" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400">Contact Person</p>
-                      <p className="font-semibold text-gray-900">{bank.contact}</p>
+                      <p className="text-[10px] text-[var(--ink-muted)] font-bold uppercase tracking-wider">Contact Person</p>
+                      <p className="font-semibold text-[var(--ink)]">{bank.contact}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center">
-                      <Phone size={14} className="text-gray-500" />
+                    <div className="w-8 h-8 rounded-full bg-[var(--bg-surface)] flex items-center justify-center">
+                      <Phone size={14} className="text-[var(--ink-soft)]" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{bank.phone}</p>
+                      <p className="font-medium text-[var(--ink)] font-mono">{bank.phone}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center">
-                      <Mail size={14} className="text-gray-500" />
+                    <div className="w-8 h-8 rounded-full bg-[var(--bg-surface)] flex items-center justify-center">
+                      <Mail size={14} className="text-[var(--ink-soft)]" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 truncate max-w-[180px]">{bank.email}</p>
+                      <p className="font-medium text-[var(--ink)] truncate max-w-[180px]">{bank.email}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-gray-100 mb-6 bg-gray-50/50 -mx-6 px-6">
+                <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-[var(--border-color)] mb-6 bg-[var(--bg-surface)]/30 -mx-6 px-6">
                   <div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                    <div className="flex items-center gap-1 text-[10px] text-[var(--ink-muted)] font-bold uppercase tracking-wider mb-1">
                       <IndianRupee size={12} /> Total Disbursed
                     </div>
-                    <p className="font-bold text-gray-900">{bank.disbursed}</p>
+                    <p className="font-bold text-[var(--gold)] font-mono">{bank.disbursed}</p>
                   </div>
                   <div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                    <div className="flex items-center gap-1 text-[10px] text-[var(--ink-muted)] font-bold uppercase tracking-wider mb-1">
                       <Clock size={12} /> Avg. Processing
                     </div>
-                    <p className="font-bold text-gray-900">{bank.time}</p>
+                    <p className="font-bold text-[var(--ink)] font-mono">{bank.time}</p>
                   </div>
                 </div>
 
-                <button className="w-full bg-white border border-gray-200 text-[#2563EB] hover:text-white hover:bg-[#2563EB] font-semibold py-2.5 rounded-xl text-sm transition-all active:scale-[0.98]">
+                <button className="w-full bg-transparent border border-[var(--border-color)] text-[var(--accent)] hover:bg-[var(--accent-soft)] hover:border-[var(--accent)] font-semibold py-2.5 rounded-xl text-sm transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">
                   View Offers
                 </button>
               </div>
@@ -158,11 +159,11 @@ export default function BankingPartners() {
 
         {filteredBanks.length === 0 && (
           <div className="py-16 text-center">
-            <div className="float-bounce inline-block mb-4">
-              <Building size={40} className="text-gray-300" />
+            <div className="inline-block mb-4 text-[var(--ink-muted)]">
+              <Building size={40} />
             </div>
-            <p className="text-gray-500 font-medium">No banking partners found</p>
-            <p className="text-sm text-gray-400 mt-1">Try adjusting your search query</p>
+            <p className="text-[var(--ink-soft)] font-medium">No banking partners found</p>
+            <p className="text-sm text-[var(--ink-muted)] mt-1">Try adjusting your search query</p>
           </div>
         )}
       </div>

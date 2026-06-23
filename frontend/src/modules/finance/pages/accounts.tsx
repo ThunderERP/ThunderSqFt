@@ -4,11 +4,11 @@ import { Plus, Wallet, CreditCard, TrendingUp, TrendingDown, ArrowUpCircle, Arro
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
-import PageHeader from '../components/PageHeader'
-import StatCard from '../components/StatCard'
-import StatusBadge from '../components/StatusBadge'
-import Modal from '../components/Modal'
-import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../components/MotionComponents'
+import PageHeader from '../../shared/components/PageHeader'
+import StatCard from '../../shared/components/StatCard'
+import StatusBadge from '../../shared/components/StatusBadge'
+import Modal from '../../shared/components/Modal'
+import { StaggerContainer, StaggerItem, PageTransition, ScrollRevealMotion } from '../../shared/components/MotionComponents'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -120,8 +120,8 @@ export default function Accounts() {
         actions={
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl font-medium text-sm shadow-lg transition-all"
-            style={{ background: '#2563EB', boxShadow: '0 8px 24px rgba(37,99,235,0.25)' }}
+            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl font-medium text-sm shadow-lg transition-all bg-[var(--accent)] hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+            style={{ boxShadow: '0 8px 24px rgba(61,127,255,0.25)' }}
           >
             <Plus size={18} />
             Add Account
@@ -131,43 +131,44 @@ export default function Accounts() {
 
       {/* KPI Cards */}
       <StaggerContainer className="bento-grid mb-8">
-        <StaggerItem><StatCard label="Total Balance" value={`₹${totalBalance.toLocaleString()}`} subtitle="Across all accounts" icon={<Wallet size={20} style={{ color: '#2563EB' }} />} /></StaggerItem>
-        <StaggerItem><StatCard label="Active Accounts" value={activeAccountsCount.toString()} subtitle="Currently active" icon={<CreditCard size={20} style={{ color: '#2563EB' }} />} /></StaggerItem>
-        <StaggerItem><StatCard label="Monthly Inflow" value="+₹328,000" subtitle="This month" valueColor="text-emerald-600" icon={<TrendingUp size={20} style={{ color: '#22C55E' }} />} /></StaggerItem>
-        <StaggerItem><StatCard label="Monthly Outflow" value="-₹215,000" subtitle="This month" valueColor="text-red-500" icon={<TrendingDown size={20} style={{ color: '#EF4444' }} />} /></StaggerItem>
+        <StaggerItem><StatCard label="Total Balance" value={`₹${totalBalance.toLocaleString()}`} subtitle="Across all accounts" icon={<Wallet size={20} className="text-[var(--accent)]" />} /></StaggerItem>
+        <StaggerItem><StatCard label="Active Accounts" value={activeAccountsCount.toString()} subtitle="Currently active" icon={<CreditCard size={20} className="text-[var(--accent)]" />} /></StaggerItem>
+        <StaggerItem><StatCard label="Monthly Inflow" value="+₹328,000" subtitle="This month" valueColor="text-[var(--success)]" icon={<TrendingUp size={20} className="text-[var(--success)]" />} /></StaggerItem>
+        <StaggerItem><StatCard label="Monthly Outflow" value="-₹215,000" subtitle="This month" valueColor="text-[var(--danger)]" icon={<TrendingDown size={20} className="text-[var(--danger)]" />} /></StaggerItem>
       </StaggerContainer>
 
       {/* Accounts Table & Pie Chart */}
-      <div className="bento-grid mb-6" style={{ gridTemplateColumns: '2fr 1fr' }}>
-        <ScrollRevealMotion delay={0.05}>
-          <div className="neu-card overflow-hidden">
-            <div className="p-6 border-b border-gray-50">
-              <h2 className="text-lg font-semibold text-gray-900">All Accounts</h2>
-              <p className="text-sm text-gray-400">Overview of your financial accounts</p>
+      {/* Accounts Table & Pie Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <ScrollRevealMotion delay={0.05} className="lg:col-span-2">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg shadow-card overflow-hidden">
+            <div className="p-6 border-b border-[var(--border-color)]">
+              <h2 className="text-lg font-semibold text-[var(--ink)] font-display">All Accounts</h2>
+              <p className="text-sm text-[var(--ink-soft)]">Overview of your financial accounts</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Account</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Bank</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Balance</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <tr className="border-b border-[var(--border-color)]">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Account</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Bank</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Balance</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {accounts.map((account) => (
-                    <tr key={account.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                    <tr key={account.id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-hover)] transition-colors">
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-medium text-gray-900">{account.name}</p>
-                          <p className="text-xs text-gray-400">{account.id}</p>
+                          <p className="font-medium text-[var(--ink)]">{account.name}</p>
+                          <p className="text-xs font-mono text-[var(--ink-muted)]">{account.id}</p>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{account.type}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{account.bank}</td>
-                      <td className="px-6 py-4 text-sm font-semibold text-gray-900">₹{account.balance.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-sm text-[var(--ink-soft)]">{account.type}</td>
+                      <td className="px-6 py-4 text-sm text-[var(--ink-soft)]">{account.bank}</td>
+                      <td className="px-6 py-4 text-sm font-mono font-semibold text-[var(--gold)]">₹{account.balance.toLocaleString('en-IN')}</td>
                       <td className="px-6 py-4">
                         <StatusBadge status={account.status} />
                       </td>
@@ -181,10 +182,12 @@ export default function Accounts() {
 
         {/* Pie Chart */}
         <ScrollRevealMotion delay={0.1}>
-          <div className="neu-card p-6">
-            <h2 className="text-lg font-semibold text-gray-900">Account Distribution</h2>
-            <p className="text-sm text-gray-400 mb-6">Balance allocation across accounts</p>
-            <div className="flex items-center justify-center">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg shadow-card p-6 flex flex-col justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-[var(--ink)] font-display">Account Distribution</h2>
+              <p className="text-sm text-[var(--ink-soft)] mb-6">Balance allocation across accounts</p>
+            </div>
+            <div className="flex items-center justify-center flex-1">
               <div className="w-full max-w-[260px]">
                 <Pie
                   data={distributionData}
@@ -199,12 +202,12 @@ export default function Accounts() {
                           pointStyle: 'circle',
                           boxWidth: 8,
                           font: { family: 'Inter', size: 11 },
-                          color: '#64748B',
+                          color: '#A5A6BE',
                           padding: 12,
                         },
                       },
                       tooltip: {
-                        backgroundColor: '#1E293B',
+                        backgroundColor: '#1E1E2C',
                         titleFont: { family: 'Inter', size: 13 },
                         bodyFont: { family: 'Inter', size: 12 },
                         padding: 12,
@@ -228,19 +231,19 @@ export default function Accounts() {
 
       {/* Live Transactions Section */}
       <ScrollRevealMotion delay={0.1}>
-        <div className="neu-card p-6 mt-6">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg shadow-card p-6 mt-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
+                <h2 className="text-lg font-semibold text-[var(--ink)] font-display">Recent Transactions</h2>
                 <span className="flex h-2 w-2 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                 </span>
               </div>
-              <p className="text-sm text-gray-400">Real-time activity across all accounts</p>
+              <p className="text-sm text-[var(--ink-soft)]">Real-time activity across all accounts</p>
             </div>
-            <button className="text-xs font-semibold text-primary-500 hover:text-primary-600 transition-colors">
+            <button className="text-xs font-semibold text-[var(--accent)] hover:text-blue-400 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]">
               View All
             </button>
           </div>
@@ -249,12 +252,12 @@ export default function Accounts() {
             {liveTransactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="group flex items-center justify-between p-4 rounded-xl neu-inset hover:shadow-md transition-all duration-200"
+                className="group flex items-center justify-between p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] hover:border-[var(--border-hover)] hover:bg-[var(--bg-hover)] transition-all duration-200"
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${transaction.type === 'incoming'
-                    ? 'bg-emerald-50 text-emerald-600'
-                    : 'bg-red-50 text-red-600'
+                    ? 'bg-[var(--success-soft)] text-[var(--success)]'
+                    : 'bg-[var(--danger-soft)] text-[var(--danger)]'
                     }`}>
                     {transaction.type === 'incoming' ? (
                       <ArrowUpCircle size={20} />
@@ -263,10 +266,10 @@ export default function Accounts() {
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 group-hover:text-primary-700 transition-colors">
+                    <p className="font-medium text-[var(--ink)] group-hover:text-[var(--accent)] transition-colors">
                       {transaction.name}
                     </p>
-                    <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--ink-muted)]">
                       <Clock size={12} />
                       {transaction.time}
                     </div>
@@ -274,7 +277,7 @@ export default function Accounts() {
                 </div>
 
                 <div className="text-right">
-                  <p className={`font-bold ${transaction.type === 'incoming' ? 'text-emerald-600' : 'text-red-600'
+                  <p className={`font-mono font-bold ${transaction.type === 'incoming' ? 'text-[var(--success)]' : 'text-[var(--danger)]'
                     }`}>
                     {transaction.amount}
                   </p>
@@ -292,29 +295,29 @@ export default function Accounts() {
       <Modal isOpen={createModalOpen} onClose={() => setCreateModalOpen(false)} title="Add New Account">
         <form onSubmit={handleAddAccount} className="space-y-5">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Account Name</label>
+            <label className="text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider">Account Name</label>
             <div className="relative">
-              <Wallet size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Wallet size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
               <input
                 required
                 type="text"
                 placeholder="e.g. Operating Account"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                className="w-full pl-11 pr-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none rounded-2xl text-sm transition-all"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Type</label>
+              <label className="text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider">Type</label>
               <div className="relative">
-                <Tag size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Tag size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary-500 transition-all outline-none appearance-none"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none rounded-2xl text-sm transition-all appearance-none"
                 >
                   <option>Checking</option>
                   <option>Savings</option>
@@ -324,39 +327,40 @@ export default function Accounts() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Bank Name</label>
+              <label className="text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider">Bank Name</label>
               <div className="relative">
-                <Building size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Building size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
                 <input
                   required
                   type="text"
                   placeholder="e.g. Chase Bank"
                   value={formData.bank}
                   onChange={(e) => setFormData({ ...formData, bank: e.target.value })}
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none rounded-2xl text-sm transition-all"
                 />
               </div>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Opening Balance (₹)</label>
+            <label className="text-xs font-bold text-[var(--ink-soft)] uppercase tracking-wider">Opening Balance (₹)</label>
             <div className="relative">
-              <IndianRupee size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <IndianRupee size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
               <input
                 required
                 type="number"
                 placeholder="0.00"
                 value={formData.balance}
                 onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
-                className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                className="w-full pl-11 pr-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] outline-none rounded-2xl text-sm transition-all font-mono"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold text-sm hover:bg-gray-800 transition-all shadow-xl shadow-gray-900/10 mt-4"
+            className="w-full py-4 bg-[var(--accent)] text-white rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all shadow-lg mt-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+            style={{ boxShadow: '0 8px 24px rgba(61,127,255,0.25)' }}
           >
             Create Account
           </button>

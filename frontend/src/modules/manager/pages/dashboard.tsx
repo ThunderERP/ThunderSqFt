@@ -1,8 +1,10 @@
 import { PageTransition } from '../../shared/components/MotionComponents'
-import PageHeader from '../../finance/components/PageHeader'
-import StatCard from '../../finance/components/StatCard'
-import DataTable from '../../finance/components/DataTable'
-import { Target, Users, CheckSquare, BarChart3, Activity } from 'lucide-react'
+import PageHeader from '../../shared/components/PageHeader'
+import StatCard from '../../shared/components/StatCard'
+import DataTable from '../../shared/components/DataTable'
+import StatusBadge from '../../shared/components/StatusBadge'
+import ActivityTimeline from '../../shared/components/ActivityTimeline'
+import { Target, Users, CheckSquare, BarChart3 } from 'lucide-react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,7 +32,7 @@ export default function ManagerDashboard() {
       {
         label: 'Active Pipeline',
         data: [45, 30, 18, 8, 5],
-        backgroundColor: '#2563EB',
+        backgroundColor: '#3D7FFF', // var(--accent)
         borderRadius: 4,
       }
     ]
@@ -52,61 +54,101 @@ export default function ManagerDashboard() {
     { time: '5 hours ago', text: 'Amit Verma added 5 new leads from Facebook campaign', type: 'info' },
   ]
 
+  const activityEvents = recentActivity.map(act => ({
+    title: act.type === 'booking' ? 'Booking Confirmed' : 
+           act.type === 'negative' ? 'Lead Status Alert' : 
+           act.type === 'positive' ? 'Site Visit Logged' : 
+           act.type === 'alert' ? 'Approval Requested' : 'Campaign Activity',
+    desc: act.text,
+    time: act.time,
+    color: act.type === 'booking' ? 'var(--success)' : 
+           act.type === 'negative' ? 'var(--danger)' : 
+           act.type === 'positive' ? 'var(--accent)' : 
+           act.type === 'alert' ? 'var(--gold)' : 'var(--ink-soft)',
+    icon: act.type === 'booking' ? 'Briefcase' : 
+          act.type === 'negative' ? 'XCircle' : 
+          act.type === 'positive' ? 'CheckCircle' : 
+          act.type === 'alert' ? 'AlertTriangle' : 'Activity'
+  }))
+
   const columns = [
     { 
       key: 'rank', 
       label: 'Rank',
-      render: (val: number) => (
-        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${val === 1 ? 'bg-yellow-100 text-yellow-700' : val === 2 ? 'bg-gray-200 text-gray-700' : val === 3 ? 'bg-orange-100 text-orange-700' : 'bg-gray-50 text-gray-500'}`}>
-          #{val}
-        </span>
-      )
+      render: (item: any) => <StatusBadge status={`#${item.rank}`} />
     },
-    { key: 'name', label: 'Executive Name', render: (val: string) => <span className="font-semibold text-gray-900">{val}</span> },
+    { 
+      key: 'name', 
+      label: 'Executive Name', 
+      render: (item: any) => <span className="font-bold text-[var(--ink)] font-sans">{item.name}</span> 
+    },
     { key: 'leads', label: 'Leads Handled' },
     { key: 'visits', label: 'Site Visits' },
-    { key: 'conversions', label: 'Conversions', render: (val: number) => <span className="font-bold text-gray-900">{val}</span> },
+    { 
+      key: 'conversions', 
+      label: 'Conversions', 
+      render: (item: any) => <span className="font-mono font-bold text-[var(--ink)]">{item.conversions}</span> 
+    },
     { 
       key: 'rate', 
       label: 'Conversion Rate',
-      render: (val: string) => <span className="px-2 py-1 bg-green-50 text-green-700 rounded-md text-xs font-semibold">{val}</span>
+      render: (item: any) => {
+        const numericRate = parseFloat(item.rate)
+        return (
+          <div className="flex items-center gap-1.5 font-mono">
+            <span>{item.rate}</span>
+            <StatusBadge status={numericRate >= 10 ? 'On-Target' : 'Watch'} />
+          </div>
+        )
+      }
     },
   ]
 
   return (
     <PageTransition>
-      <div className="space-y-6">
+      <div className="space-y-6 text-left">
         <PageHeader 
-          title="Manager Dashboard" 
+          title={<span className="font-display">Manager Dashboard</span>} 
           subtitle="Monitor team performance and pipeline health."
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Team Target" value="85%" subtitle="Of monthly goal achieved" icon={<Target size={20} />} trend="up" trendValue="5%" />
-          <StatCard title="Active Pipeline" value="183" subtitle="Total leads in progress" icon={<Users size={20} />} trend="neutral" trendValue="0%" />
-          <StatCard title="Approvals Pending" value="4" subtitle="Discount requests" icon={<CheckSquare size={20} />} trend="down" trendValue="1" />
-          <StatCard title="Avg Conversion" value="8.2%" subtitle="Team average" icon={<BarChart3 size={20} />} trend="up" trendValue="0.5%" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard label="Team Target" value="85%" subtitle="Of monthly goal achieved" icon={<Target size={16} />} trend="up" trendValue="5%" />
+          <StatCard label="Active Pipeline" value="183" subtitle="Total leads in progress" icon={<Users size={16} />} trend="neutral" trendValue="0%" />
+          <StatCard label="Approvals Pending" value="4" subtitle="Discount requests" icon={<CheckSquare size={16} />} trend="down" trendValue="1" />
+          <StatCard label="Avg Conversion" value="8.2%" subtitle="Team average" icon={<BarChart3 size={16} />} trend="up" trendValue="0.5%" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="platform-card p-6 lg:col-span-2">
-            <h3 className="text-lg font-bold text-gray-800 mb-6">Pipeline Health</h3>
-            <div className="h-64">
+          <div className="card p-6 lg:col-span-2">
+            <h3 className="text-base font-bold text-[var(--ink)] mb-6 font-display">Pipeline Health</h3>
+            <div className="h-64" role="img" aria-label="Active pipeline chart.">
               <Bar 
                 data={pipelineData}
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
                   plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                      backgroundColor: 'var(--bg-card)',
+                      borderColor: 'var(--border-color)',
+                      borderWidth: 1,
+                      titleColor: 'var(--ink)',
+                      bodyColor: 'var(--ink-soft)',
+                      titleFont: { family: 'var(--font-sans)', size: 12 },
+                      bodyFont: { family: 'var(--font-mono)', size: 11 }
+                    }
                   },
                   scales: {
                     y: {
                       beginAtZero: true,
-                      grid: { color: '#f3f4f6' }
+                      grid: { color: 'var(--border-color)' },
+                      ticks: { color: 'var(--ink-soft)', font: { family: 'var(--font-mono)', size: 10 } }
                     },
                     x: {
-                      grid: { display: false }
+                      grid: { display: false },
+                      ticks: { color: 'var(--ink-soft)', font: { family: 'var(--font-sans)', size: 10 } }
                     }
                   }
                 }}
@@ -114,31 +156,13 @@ export default function ManagerDashboard() {
             </div>
           </div>
 
-          <div className="platform-card p-6 flex flex-col h-[340px]">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Activity size={18} className="text-[#2563EB]" /> Live Activity Feed
-            </h3>
-            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-              {recentActivity.map((activity, i) => (
-                <div key={i} className="border-l-2 border-gray-100 pl-4 relative">
-                  <div className={`absolute w-2 h-2 rounded-full -left-[5px] top-1.5 
-                    ${activity.type === 'booking' ? 'bg-emerald-500' : 
-                      activity.type === 'negative' ? 'bg-red-500' : 
-                      activity.type === 'positive' ? 'bg-blue-500' : 
-                      activity.type === 'alert' ? 'bg-amber-500' : 'bg-gray-400'}`} 
-                  />
-                  <p className="text-xs text-gray-400 mb-0.5">{activity.time}</p>
-                  <p className="text-sm text-gray-700 leading-snug">{activity.text}</p>
-                </div>
-              ))}
-            </div>
+          <div>
+            <ActivityTimeline events={activityEvents} />
           </div>
         </div>
 
-        <div className="platform-card overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800">Team Leaderboard</h3>
-          </div>
+        <div className="space-y-3">
+          <h3 className="text-base font-bold text-[var(--ink)] font-display">Team Leaderboard</h3>
           <DataTable columns={columns} data={mockLeaderboard} />
         </div>
       </div>

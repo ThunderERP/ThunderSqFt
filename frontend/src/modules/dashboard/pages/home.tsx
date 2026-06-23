@@ -423,7 +423,7 @@ export default function UnifiedDashboard() {
                     </div>
                     <button
                       onClick={() => handleRemoveTask(task.id)}
-                      className="p-1 text-ink-muted hover:text-danger rounded hover:bg-danger-soft transition-all opacity-0 group-hover:opacity-100 shrink-0"
+                      className="p-1 text-ink-soft hover:text-danger rounded hover:bg-danger-soft transition-all shrink-0"
                       title="Delete Task"
                     >
                       <Trash2 size={13} />

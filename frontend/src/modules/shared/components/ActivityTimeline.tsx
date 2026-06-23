@@ -15,8 +15,8 @@ interface ActivityTimelineProps {
 
 export default function ActivityTimeline({ events }: ActivityTimelineProps) {
   return (
-    <div className="neu-card p-6 bg-white animate-fade-in">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-6">Activity History</h3>
+    <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-6 rounded-lg shadow-card animate-fade-in text-[var(--ink)]">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-6 font-display">Activity History</h3>
       {events.length === 0 ? (
         <p className="text-xs text-[var(--ink-soft)] italic font-semibold">No recent activity recorded.</p>
       ) : (
@@ -24,13 +24,13 @@ export default function ActivityTimeline({ events }: ActivityTimelineProps) {
           {events.map((event, idx) => {
             // Dynamically resolve icon from lucide-react or fallback to Activity
             const IconComponent = (LucideIcons as any)[event.icon || 'Activity'] || LucideIcons.Activity
-            const circleColor = event.color || 'var(--blueprint-accent)'
+            const circleColor = event.color || 'var(--accent)'
             
             return (
               <div key={idx} className="relative group">
                 {/* Timeline node */}
                 <div 
-                  className="absolute -left-[37px] top-1.5 w-6 h-6 rounded-full flex items-center justify-center bg-white border border-[var(--border-color)] transition-all group-hover:scale-110"
+                  className="absolute -left-[37px] top-1.5 w-6 h-6 rounded-full flex items-center justify-center bg-[var(--bg-surface)] border border-[var(--border-color)] transition-all group-hover:scale-110"
                   style={{ color: circleColor }}
                 >
                   <IconComponent size={12} className="stroke-[2.5]" />

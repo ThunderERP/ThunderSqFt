@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom'
-import { Moon, Menu, Sun } from 'lucide-react'
+import { Moon, Menu, Sun, Search, Bell, Landmark } from 'lucide-react'
 import { useTheme } from '../../../context/ThemeContext'
+import { useAuth } from '../../auth/context/AuthContext'
 
 const pageTitles: Record<string, { title: string; subtitle?: string }> = {
   '/': { title: 'Dashboard' },
@@ -70,36 +71,81 @@ function getPageInfo(pathname: string): { title: string; subtitle?: string } {
 export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const location = useLocation()
   const { theme, toggleTheme } = useTheme()
+  const { currentUser } = useAuth()
   
   const currentPath = location.pathname
   const pageInfo = getPageInfo(currentPath)
+  const userInitials = currentUser?.name
+    ? currentUser.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
+    : 'U'
 
   return (
-    <header className="h-[72px] flex items-center justify-between px-4 md:px-8 z-30 sticky top-0 bg-bg-card border-b border-border-color">
+    <header className="h-[72px] flex items-center justify-between px-4 md:px-8 z-30 sticky top-0 bg-[var(--bg-card)] border-b border-[var(--border-color)]">
       <div className="flex items-center gap-4">
         <button 
-          className="lg:hidden p-2 -ml-2 text-ink-soft rounded-xl hover:bg-bg-hover"
+          className="lg:hidden p-2 -ml-2 text-[var(--ink-soft)] rounded-xl hover:bg-[var(--bg-hover)]"
           onClick={onMenuClick}
           aria-label="Open navigation"
         >
-          <Menu size={22} />
+          <Menu size={20} />
         </button>
 
         <div>
-          <h2 className="text-lg md:text-xl font-bold text-ink tracking-tight">{pageInfo.title}</h2>
-          {pageInfo.subtitle && <p className="text-xs md:text-sm text-ink-soft mt-0.5 font-medium">{pageInfo.subtitle}</p>}
+          <h2 className="text-base md:text-lg font-bold text-[var(--ink)] tracking-tight font-display">
+            {pageInfo.title}
+          </h2>
+          {pageInfo.subtitle && (
+            <p className="text-[11px] md:text-xs text-[var(--ink-soft)] mt-0.5 font-medium">
+              {pageInfo.subtitle}
+            </p>
+          )}
         </div>
       </div>
 
       <div className="flex items-center gap-4">
+        {/* Mock Search Box */}
+        <div className="relative hidden md:block w-48 lg:w-64">
+          <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--ink-muted)]">
+            <Search size={14} />
+          </span>
+          <input
+            type="text"
+            placeholder="Search ERP..."
+            className="w-full bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-md text-xs pl-9 pr-3 py-2 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]/20 text-[var(--ink)] placeholder-[var(--ink-muted)] transition-all"
+            aria-label="Search"
+          />
+        </div>
+
+        {/* Branch / Scope Selector Chip */}
+        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[var(--bg-surface)] border border-[var(--border-color)] text-xs text-[var(--ink-soft)] font-medium">
+          <Landmark size={12} className="text-[var(--accent)]" />
+          <span>Delhi Branch</span>
+        </div>
+
+        {/* Notification Bell */}
+        <button
+          className="relative p-2 text-[var(--ink-soft)] hover:text-[var(--ink)] bg-[var(--bg-hover)] rounded-full transition-colors"
+          title="Notifications"
+          aria-label="View notifications"
+        >
+          <Bell size={16} />
+          <span className="absolute top-1 right-1 w-2 h-2 bg-[var(--danger)] rounded-full" />
+        </button>
+
+        {/* Theme Toggler */}
         <button 
           onClick={toggleTheme}
-          className="p-2 text-ink-soft hover:text-ink bg-bg-hover hover:bg-bg-hover/80 rounded-full transition-colors"
+          className="p-2 text-[var(--ink-soft)] hover:text-[var(--ink)] bg-[var(--bg-hover)] rounded-full transition-colors"
           title="Toggle dark mode"
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         >
-          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
+
+        {/* User Profile Avatar */}
+        <div className="w-8 h-8 rounded-full bg-[var(--accent)] text-white flex items-center justify-center font-bold text-xs shrink-0 transition-shadow hover:shadow-glow">
+          {userInitials}
+        </div>
       </div>
     </header>
   )

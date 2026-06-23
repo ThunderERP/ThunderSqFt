@@ -14,9 +14,9 @@ import {
 } from 'chart.js'
 import { Printer, Download, TrendingUp, PieChart, Activity, ChevronRight, FileText } from 'lucide-react'
 import { useState } from 'react'
-import PageHeader from '../components/PageHeader'
-import StatCard from '../components/StatCard'
-import { PageTransition, ScrollRevealMotion } from '../components/MotionComponents'
+import PageHeader from '../../shared/components/PageHeader'
+import StatCard from '../../shared/components/StatCard'
+import { PageTransition, ScrollRevealMotion } from '../../shared/components/MotionComponents'
 import { toast } from 'sonner'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -194,14 +194,14 @@ export default function FinancialReports() {
             <>
               <button
                 onClick={handlePrint}
-                className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-gray-700 rounded-xl font-medium text-sm hover:bg-gray-50 transition-all">
+                className="flex items-center gap-2 px-5 py-2.5 bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--ink-soft)] hover:text-[var(--ink)] hover:bg-[var(--bg-hover)] rounded-xl font-medium text-sm transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]">
                 <Printer size={18} />
                 Print
               </button>
               <button
                 onClick={handleExportPDF}
-                className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl font-medium text-sm shadow-lg transition-all"
-                style={{ background: '#2563EB', boxShadow: '0 8px 24px rgba(37,99,235,0.25)' }}
+                className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl font-medium text-sm shadow-lg transition-all bg-[var(--accent)] hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+                style={{ boxShadow: '0 8px 24px rgba(61,127,255,0.25)' }}
               >
                 <Download size={18} />
                 Export PDF
@@ -210,31 +210,31 @@ export default function FinancialReports() {
           }
         />
 
-        <div className="flex items-center gap-1 bg-gray-100/50 p-1 rounded-2xl w-fit max-w-full overflow-x-auto whitespace-nowrap mb-8 border border-gray-200/50">
+        <div className="flex items-center gap-1 bg-[var(--bg-surface)] p-1 rounded-2xl w-fit max-w-full overflow-x-auto whitespace-nowrap mb-8 border border-[var(--border-color)]">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'overview' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${activeTab === 'overview' ? 'bg-[var(--bg-hover)] text-[var(--ink)] shadow-md' : 'text-[var(--ink-soft)] hover:text-[var(--ink)]'
               }`}
           >
             Overview
           </button>
           <button
             onClick={() => setActiveTab('p&l')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'p&l' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${activeTab === 'p&l' ? 'bg-[var(--bg-hover)] text-[var(--ink)] shadow-md' : 'text-[var(--ink-soft)] hover:text-[var(--ink)]'
               }`}
           >
             Profit & Loss
           </button>
           <button
             onClick={() => setActiveTab('balance')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'balance' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${activeTab === 'balance' ? 'bg-[var(--bg-hover)] text-[var(--ink)] shadow-md' : 'text-[var(--ink-soft)] hover:text-[var(--ink)]'
               }`}
           >
             Balance Sheet
           </button>
           <button
             onClick={() => setActiveTab('ratios')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'ratios' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${activeTab === 'ratios' ? 'bg-[var(--bg-hover)] text-[var(--ink)] shadow-md' : 'text-[var(--ink-soft)] hover:text-[var(--ink)]'
               }`}
           >
             Key Ratios
@@ -243,13 +243,13 @@ export default function FinancialReports() {
 
         {activeTab === 'overview' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="neu-card p-6 flex flex-wrap items-center gap-6">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg shadow-card p-6 flex flex-wrap items-center gap-6">
               <div className="flex-1 min-w-[200px]">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Date Range</label>
+                <label className="block text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider mb-2">Date Range</label>
                 <select
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 bg-gray-50/50 focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] transition-all outline-none"
                 >
                   <option value="Year to Date">Year to Date</option>
                   <option value="Last Quarter">Last Quarter</option>
@@ -258,8 +258,8 @@ export default function FinancialReports() {
                 </select>
               </div>
               <div className="flex-1 min-w-[200px]">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Category</label>
-                <select className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 bg-gray-50/50 focus:ring-2 focus:ring-primary-500 transition-all outline-none">
+                <label className="block text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider mb-2">Category</label>
+                <select className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] transition-all outline-none">
                   <option>All Reports</option>
                   <option>Revenue</option>
                   <option>Expenses</option>
@@ -269,21 +269,21 @@ export default function FinancialReports() {
               {dateRange === 'Custom Range' && (
                 <>
                   <div className="flex-1 min-w-[200px] animate-in fade-in slide-in-from-left-4 duration-300">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Start Date</label>
+                    <label className="block text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider mb-2">Start Date</label>
                     <input
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 bg-gray-50/50 focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] transition-all outline-none font-mono"
                     />
                   </div>
                   <div className="flex-1 min-w-[200px] animate-in fade-in slide-in-from-left-4 duration-300">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">End Date</label>
+                    <label className="block text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wider mb-2">End Date</label>
                     <input
                       type="date"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 bg-gray-50/50 focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent)] transition-all outline-none font-mono"
                     />
                   </div>
                 </>
@@ -291,23 +291,23 @@ export default function FinancialReports() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard label="Total Revenue" value={kpis.revenue} subtitle="↗ +15.3% vs last period" valueColor="text-gray-900" delay={0} />
-              <StatCard label="Total Expenses" value={kpis.expenses} subtitle="↗ +8.2% vs last period" valueColor="text-gray-900" delay={1} />
-              <StatCard label="Net Profit" value={kpis.netProfit} subtitle={kpis.margin} valueColor="text-emerald-600" delay={2} />
-              <StatCard label="Total Assets" value={kpis.assets} subtitle="Current financial position" valueColor="text-gray-900" delay={3} />
+              <StatCard label="Total Revenue" value={kpis.revenue} subtitle="↗ +15.3% vs last period" valueColor="text-[var(--ink)]" delay={0} />
+              <StatCard label="Total Expenses" value={kpis.expenses} subtitle="↗ +8.2% vs last period" valueColor="text-[var(--danger)]" delay={1} />
+              <StatCard label="Net Profit" value={kpis.netProfit} subtitle={kpis.margin} valueColor="text-[var(--success)]" delay={2} />
+              <StatCard label="Total Assets" value={kpis.assets} subtitle="Current financial position" valueColor="text-[var(--accent)]" delay={3} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-                <h2 className="text-lg font-bold text-gray-900">Expense Distribution</h2>
-                <p className="text-xs text-gray-400 mb-8">Breakdown of expenses by category</p>
+              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-card rounded-lg">
+                <h2 className="text-lg font-bold text-[var(--ink)] font-display">Expense Distribution</h2>
+                <p className="text-xs text-[var(--ink-soft)] mb-8">Breakdown of expenses by category</p>
                 <div className="flex items-center justify-center h-[300px]">
                   <Doughnut
                     data={{
                       labels: ['Salaries', 'Operations', 'Marketing', 'Technology', 'Others'],
                       datasets: [{
                         data: kpis.expenseData,
-                        backgroundColor: ['#4F7DF3', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'],
+                        backgroundColor: ['var(--accent)', 'var(--success)', 'var(--gold)', 'var(--violet)', 'var(--danger)'],
                         borderWidth: 0,
                       }],
                     }}
@@ -315,15 +315,25 @@ export default function FinancialReports() {
                       responsive: true,
                       maintainAspectRatio: false,
                       cutout: '70%',
-                      plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6 } } }
+                      plugins: {
+                        legend: {
+                          position: 'bottom',
+                          labels: {
+                            usePointStyle: true,
+                            boxWidth: 6,
+                            color: '#A5A6BE',
+                            font: { family: 'Inter', size: 10 }
+                          }
+                        }
+                      }
                     }}
                   />
                 </div>
               </div>
 
-              <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-                <h2 className="text-lg font-bold text-gray-900">Revenue Trends</h2>
-                <p className="text-xs text-gray-400 mb-8">Monthly revenue vs target</p>
+              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-card rounded-lg">
+                <h2 className="text-lg font-bold text-[var(--ink)] font-display">Revenue Trends</h2>
+                <p className="text-xs text-[var(--ink-soft)] mb-8">Monthly revenue vs target</p>
                 <div className="h-[300px]">
                   <Line
                     data={{
@@ -332,11 +342,11 @@ export default function FinancialReports() {
                         {
                           label: 'Revenue',
                           data: kpis.revenueTrend,
-                          borderColor: '#4F7DF3',
-                          backgroundColor: 'rgba(79, 125, 243, 0.05)',
+                          borderColor: '#3D7FFF',
+                          backgroundColor: 'rgba(61, 127, 255, 0.05)',
                           fill: true,
                           tension: 0.4,
-                          pointBackgroundColor: '#4F7DF3',
+                          pointBackgroundColor: '#3D7FFF',
                           pointBorderColor: '#fff',
                           pointBorderWidth: 2,
                           pointRadius: 4,
@@ -348,8 +358,14 @@ export default function FinancialReports() {
                       maintainAspectRatio: false,
                       plugins: { legend: { display: false } },
                       scales: {
-                        y: { grid: { color: '#F1F5F9' }, ticks: { font: { size: 10 } } },
-                        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                        y: {
+                          grid: { color: 'rgba(255, 255, 255, 0.06)' },
+                          ticks: { font: { size: 10 }, color: 'rgba(243, 244, 250, 0.5)' }
+                        },
+                        x: {
+                          grid: { display: false },
+                          ticks: { font: { size: 10 }, color: 'rgba(243, 244, 250, 0.5)' }
+                        }
                       }
                     }}
                   />
@@ -362,13 +378,13 @@ export default function FinancialReports() {
         {activeTab === 'p&l' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
+              <div className="lg:col-span-2 bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-card rounded-lg">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Profit & Loss Summary</h2>
-                    <p className="text-sm text-gray-500">Fiscal period: Jan 1, 2024 - Jun 30, 2024</p>
+                    <h2 className="text-xl font-bold text-[var(--ink)] font-display">Profit & Loss Summary</h2>
+                    <p className="text-sm text-[var(--ink-soft)] font-sans">Fiscal period: Jan 1, 2024 - Jun 30, 2024</p>
                   </div>
-                  <div className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold ring-1 ring-emerald-100">
+                  <div className="px-3 py-1 bg-[var(--success-soft)] text-[var(--success)] rounded-full text-xs font-bold ring-1 ring-[var(--success)]/20">
                     ACCURATE
                   </div>
                 </div>
@@ -378,34 +394,34 @@ export default function FinancialReports() {
                     <div
                       key={idx}
                       className={`flex items-center justify-between p-4 rounded-2xl transition-all ${row.category.includes('Profit') || row.category.includes('Income')
-                          ? 'bg-primary-50/50 border border-primary-100'
-                          : 'hover:bg-gray-50 border border-transparent'
+                          ? 'bg-[var(--accent-soft)] border border-[var(--accent)]/20'
+                          : 'hover:bg-[var(--bg-hover)] border border-transparent'
                         }`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${row.category.includes('Revenue') ? 'bg-blue-100 text-blue-600' :
-                            row.category.includes('Expenses') ? 'bg-red-100 text-red-600' :
-                              'bg-gray-100 text-gray-600'
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${row.category.includes('Revenue') ? 'bg-[var(--accent-soft)] text-[var(--accent)]' :
+                            row.category.includes('Expenses') ? 'bg-[var(--danger-soft)] text-[var(--danger)]' :
+                              'bg-[var(--bg-surface)] text-[var(--ink-soft)]'
                           }`}>
                           {idx === 0 ? <TrendingUp size={20} /> : <FileText size={20} />}
                         </div>
-                        <span className={`text-sm font-semibold ${row.category.includes('Profit') ? 'text-gray-900' : 'text-gray-700'}`}>
+                        <span className={`text-sm font-semibold ${row.category.includes('Profit') ? 'text-[var(--ink)] font-display' : 'text-[var(--ink-soft)]'}`}>
                           {row.category}
                         </span>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-bold text-gray-900">₹{row.value.toLocaleString()}</div>
-                        <div className="text-[10px] font-medium text-gray-400">Prev: ₹{row.previous.toLocaleString()}</div>
+                        <div className="text-sm font-mono font-bold text-[var(--ink)]">₹{row.value.toLocaleString('en-IN')}</div>
+                        <div className="text-[10px] font-mono font-medium text-[var(--ink-muted)]">Prev: ₹{row.previous.toLocaleString('en-IN')}</div>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Quaterly Bar Chart */}
-              <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm flex flex-col">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Quarterly Performance</h3>
-                <p className="text-xs text-gray-400 mb-8">Revenue and Profit growth trend</p>
+              {/* Quarterly Bar Chart */}
+              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-card rounded-lg flex flex-col">
+                <h3 className="text-lg font-bold text-[var(--ink)] font-display mb-2">Quarterly Performance</h3>
+                <p className="text-xs text-[var(--ink-soft)] mb-8">Revenue and Profit growth trend</p>
 
                 <div className="flex-1 min-h-[300px]">
                   <Bar
@@ -414,23 +430,37 @@ export default function FinancialReports() {
                       responsive: true,
                       maintainAspectRatio: false,
                       plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6, font: { size: 10 } } }
+                        legend: {
+                          position: 'bottom',
+                          labels: {
+                            usePointStyle: true,
+                            boxWidth: 6,
+                            color: '#A5A6BE',
+                            font: { family: 'Inter', size: 10 }
+                          }
+                        }
                       },
                       scales: {
-                        y: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                        y: {
+                          grid: { color: 'rgba(255, 255, 255, 0.06)' },
+                          ticks: { font: { size: 10 }, color: 'rgba(243, 244, 250, 0.5)' }
+                        },
+                        x: {
+                          grid: { display: false },
+                          ticks: { font: { size: 10 }, color: 'rgba(243, 244, 250, 0.5)' }
+                        }
                       }
                     }}
                   />
                 </div>
 
-                <div className="mt-8 p-4 bg-gray-50 rounded-2xl">
+                <div className="mt-8 p-4 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-2xl">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-gray-500">Projected Q1 Growth</span>
-                    <span className="text-xs font-bold text-emerald-600">+12.4%</span>
+                    <span className="text-xs font-medium text-[var(--ink-soft)]">Projected Q1 Growth</span>
+                    <span className="text-xs font-bold text-[var(--success)] font-mono">+12.4%</span>
                   </div>
-                  <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-emerald-500 h-full w-[75%]" />
+                  <div className="w-full bg-[var(--bg-hover)] h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-[var(--success)] h-full w-[75%]" />
                   </div>
                 </div>
               </div>
@@ -441,82 +471,82 @@ export default function FinancialReports() {
         {activeTab === 'balance' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Balance Overview</h2>
+              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-card rounded-lg">
+                <h2 className="text-xl font-bold text-[var(--ink)] font-display mb-6">Balance Overview</h2>
                 <div className="space-y-8">
                   <div>
                     <div className="flex justify-between items-end mb-4">
                       <div>
-                        <h4 className="text-sm font-semibold text-gray-500">Total Assets</h4>
-                        <div className="text-3xl font-black text-gray-900 mt-1">₹735,420</div>
+                        <h4 className="text-sm font-semibold text-[var(--ink-soft)]">Total Assets</h4>
+                        <div className="text-3xl font-bold font-mono text-[var(--ink)] mt-1">₹735,420</div>
                       </div>
-                      <div className="text-sm font-bold text-emerald-600 mb-1">↗ 12.5%</div>
+                      <div className="text-sm font-bold text-[var(--success)] mb-1">↗ 12.5%</div>
                     </div>
-                    <div className="w-full h-3 bg-gray-100 rounded-full flex overflow-hidden">
-                      <div className="h-full bg-primary-500 w-[60%] border-r-2 border-white" />
-                      <div className="h-full bg-primary-300 w-[25%] border-r-2 border-white" />
-                      <div className="h-full bg-primary-100 w-[15%]" />
+                    <div className="w-full h-3 bg-[var(--bg-surface)] rounded-full flex overflow-hidden">
+                      <div className="h-full bg-[var(--accent)] w-[60%] border-r-2 border-[var(--bg-card)]" />
+                      <div className="h-full bg-blue-600/60 w-[25%] border-r-2 border-[var(--bg-card)]" />
+                      <div className="h-full bg-blue-600/30 w-[15%]" />
                     </div>
                     <div className="flex gap-4 mt-4">
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-primary-500" />
-                        <span className="text-[10px] font-bold text-gray-400">Current</span>
+                        <div className="w-2 h-2 rounded-full bg-[var(--accent)]" />
+                        <span className="text-[10px] font-bold text-[var(--ink-soft)]">Current</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-primary-300" />
-                        <span className="text-[10px] font-bold text-gray-400">Fixed</span>
+                        <div className="w-2 h-2 rounded-full bg-blue-600/60" />
+                        <span className="text-[10px] font-bold text-[var(--ink-soft)]">Fixed</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-primary-100" />
-                        <span className="text-[10px] font-bold text-gray-400">Intangible</span>
+                        <div className="w-2 h-2 rounded-full bg-blue-600/30" />
+                        <span className="text-[10px] font-bold text-[var(--ink-soft)]">Intangible</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-8 border-t border-gray-50">
+                  <div className="pt-8 border-t border-[var(--border-color)]">
                     <div className="flex justify-between items-end mb-4">
                       <div>
-                        <h4 className="text-sm font-semibold text-gray-500">Total Liabilities</h4>
-                        <div className="text-3xl font-black text-gray-900 mt-1">₹212,300</div>
+                        <h4 className="text-sm font-semibold text-[var(--ink-soft)]">Total Liabilities</h4>
+                        <div className="text-3xl font-bold font-mono text-[var(--ink)] mt-1">₹212,300</div>
                       </div>
-                      <div className="text-sm font-bold text-red-500 mb-1">↘ 4.2%</div>
+                      <div className="text-sm font-bold text-[var(--danger)] mb-1">↘ 4.2%</div>
                     </div>
-                    <div className="w-full h-3 bg-gray-100 rounded-full flex overflow-hidden">
-                      <div className="h-full bg-red-400 w-[40%] border-r-2 border-white" />
-                      <div className="h-full bg-red-200 w-[60%]" />
+                    <div className="w-full h-3 bg-[var(--bg-surface)] rounded-full flex overflow-hidden">
+                      <div className="h-full bg-[var(--danger)] w-[40%] border-r-2 border-[var(--bg-card)]" />
+                      <div className="h-full bg-red-600/30 w-[60%]" />
                     </div>
                     <div className="flex gap-4 mt-4">
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-red-400" />
-                        <span className="text-[10px] font-bold text-gray-400">Short-term</span>
+                        <div className="w-2 h-2 rounded-full bg-[var(--danger)]" />
+                        <span className="text-[10px] font-bold text-[var(--ink-soft)]">Short-term</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-red-200" />
-                        <span className="text-[10px] font-bold text-gray-400">Long-term</span>
+                        <div className="w-2 h-2 rounded-full bg-red-600/30" />
+                        <span className="text-[10px] font-bold text-[var(--ink-soft)]">Long-term</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-primary-900 rounded-3xl p-8 text-white relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-8 transform group-hover:scale-110 transition-transform duration-700 opacity-20">
+              <div className="bg-gradient-to-br from-[var(--bg-surface)] to-[var(--bg-hover)] border border-[var(--border-color)] shadow-card rounded-lg p-8 text-white relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-8 transform group-hover:scale-110 transition-transform duration-700 opacity-20 text-[var(--accent)]">
                   <PieChart size={180} />
                 </div>
-                <h2 className="text-xl font-bold mb-8">Shareholder Equity</h2>
-                <div className="text-5xl font-black mb-2">₹523,120</div>
-                <p className="text-primary-200 text-sm max-w-[240px] leading-relaxed">
-                  Your net worth has increased by <span className="text-white font-bold">₹42,300</span> in the last 6 months.
+                <h2 className="text-xl font-bold mb-8 text-[var(--ink)] font-display">Shareholder Equity</h2>
+                <div className="text-5xl font-bold font-mono text-[var(--gold)] mb-2">₹523,120</div>
+                <p className="text-[var(--ink-soft)] text-sm max-w-[240px] leading-relaxed">
+                  Your net worth has increased by <span className="text-[var(--success)] font-mono font-bold">₹42,300</span> in the last 6 months.
                 </p>
 
                 <div className="mt-12 space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/10">
-                    <span className="text-sm font-medium">Retained Earnings</span>
-                    <span className="font-bold">₹184,200</span>
+                  <div className="flex items-center justify-between p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl backdrop-blur-sm">
+                    <span className="text-sm font-medium text-[var(--ink-soft)]">Retained Earnings</span>
+                    <span className="font-bold font-mono text-[var(--ink)]">₹184,200</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/10">
-                    <span className="text-sm font-medium">Common Stock</span>
-                    <span className="font-bold">₹338,920</span>
+                  <div className="flex items-center justify-between p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl backdrop-blur-sm">
+                    <span className="text-sm font-medium text-[var(--ink-soft)]">Common Stock</span>
+                    <span className="font-bold font-mono text-[var(--ink)]">₹338,920</span>
                   </div>
                 </div>
               </div>
@@ -528,70 +558,70 @@ export default function FinancialReports() {
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {financialRatios.map((ratio, idx) => (
-                <div key={idx} className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
-                  <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-6 text-primary-500">
+                <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-card rounded-lg hover:shadow-hover hover:-translate-y-1 transition-all duration-200">
+                  <div className="w-12 h-12 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] flex items-center justify-center mb-6 text-[var(--accent)]">
                     <Activity size={24} />
                   </div>
-                  <h3 className="text-sm font-semibold text-gray-400 mb-1">{ratio.label}</h3>
+                  <h3 className="text-sm font-semibold text-[var(--ink-soft)] mb-1">{ratio.label}</h3>
                   <div className="flex items-baseline gap-2 mb-4">
-                    <span className="text-3xl font-black text-gray-900">{ratio.value}</span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ratio.status === 'Excellent' || ratio.status === 'Healthy' ? 'bg-emerald-50 text-emerald-600' : 'bg-primary-50 text-primary-600'
+                    <span className="text-3xl font-bold font-mono text-[var(--ink)]">{ratio.value}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ratio.status === 'Excellent' || ratio.status === 'Healthy' ? 'bg-[var(--success-soft)] text-[var(--success)]' : 'bg-[var(--accent-soft)] text-[var(--accent)]'
                       }`}>
                       {ratio.status}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 leading-relaxed italic line-clamp-2">
+                  <p className="text-xs text-[var(--ink-soft)] leading-relaxed italic line-clamp-2">
                     "{ratio.description}"
                   </p>
-                  <div className="mt-6 pt-6 border-t border-gray-50 flex items-center justify-between group cursor-pointer">
-                    <span className="text-[10px] font-bold text-gray-900 uppercase tracking-widest">Analysis</span>
-                    <ChevronRight size={14} className="text-gray-300 group-hover:text-primary-500 transition-colors" />
+                  <div className="mt-6 pt-6 border-t border-[var(--border-color)] flex items-center justify-between group cursor-pointer">
+                    <span className="text-[10px] font-bold text-[var(--ink)] uppercase tracking-widest">Analysis</span>
+                    <ChevronRight size={14} className="text-[var(--ink-muted)] group-hover:text-[var(--accent)] transition-colors" />
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-              <h2 className="text-xl font-bold text-gray-900 mb-8">Profitability Insights</h2>
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-card rounded-lg">
+              <h2 className="text-xl font-bold text-[var(--ink)] font-display mb-8">Profitability Insights</h2>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-32 h-32 mb-6">
                     <Doughnut
                       data={{
                         labels: ['Net Profit', 'Other'],
-                        datasets: [{ data: [27.5, 72.5], backgroundColor: ['#10B981', '#F1F5F9'], borderWidth: 0 }]
+                        datasets: [{ data: [27.5, 72.5], backgroundColor: ['var(--success)', 'var(--bg-surface)'], borderWidth: 0 }]
                       }}
                       options={{ cutout: '80%', plugins: { legend: { display: false } } }}
                     />
                   </div>
-                  <h4 className="font-bold text-gray-900">Net Margin</h4>
-                  <p className="text-sm text-gray-400 mt-2">Above industry average (21%)</p>
+                  <h4 className="font-bold text-[var(--ink)] font-display">Net Margin</h4>
+                  <p className="text-sm text-[var(--ink-soft)] mt-2">Above industry average (21%)</p>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <div className="w-32 h-32 mb-6">
                     <Doughnut
                       data={{
                         labels: ['ROE', 'Other'],
-                        datasets: [{ data: [18.5, 81.5], backgroundColor: ['#4F7DF3', '#F1F5F9'], borderWidth: 0 }]
+                        datasets: [{ data: [18.5, 81.5], backgroundColor: ['var(--accent)', 'var(--bg-surface)'], borderWidth: 0 }]
                       }}
                       options={{ cutout: '80%', plugins: { legend: { display: false } } }}
                     />
                   </div>
-                  <h4 className="font-bold text-gray-900">Return on Equity</h4>
-                  <p className="text-sm text-gray-400 mt-2">Highly efficient capital usage</p>
+                  <h4 className="font-bold text-[var(--ink)] font-display">Return on Equity</h4>
+                  <p className="text-sm text-[var(--ink-soft)] mt-2">Highly efficient capital usage</p>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <div className="w-32 h-32 mb-6">
                     <Doughnut
                       data={{
                         labels: ['Efficiency', 'Other'],
-                        datasets: [{ data: [84, 16], backgroundColor: ['#F59E0B', '#F1F5F9'], borderWidth: 0 }]
+                        datasets: [{ data: [84, 16], backgroundColor: ['var(--gold)', 'var(--bg-surface)'], borderWidth: 0 }]
                       }}
                       options={{ cutout: '80%', plugins: { legend: { display: false } } }}
                     />
                   </div>
-                  <h4 className="font-bold text-gray-900">Asset Turnover</h4>
-                  <p className="text-sm text-gray-400 mt-2">Strong operational efficiency</p>
+                  <h4 className="font-bold text-[var(--ink)] font-display">Asset Turnover</h4>
+                  <p className="text-sm text-[var(--ink-soft)] mt-2">Strong operational efficiency</p>
                 </div>
               </div>
             </div>

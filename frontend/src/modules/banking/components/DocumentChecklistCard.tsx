@@ -1,5 +1,5 @@
 import { DocumentChecklist } from '../types/loanFile'
-import { getPulseColor } from '../../shared/utils/statusColor'
+import StatusBadge from '../../shared/components/StatusBadge'
 
 interface DocumentChecklistCardProps {
   documents: DocumentChecklist
@@ -17,37 +17,25 @@ const docLabels: Record<keyof DocumentChecklist, string> = {
 }
 
 export default function DocumentChecklistCard({ documents, onToggle }: DocumentChecklistCardProps) {
-  const goodColors = getPulseColor('good')
-  const waitingColors = getPulseColor('waiting')
-
   return (
-    <div className="neu-card p-6 bg-white h-full">
-      <h3 className="text-sm font-bold uppercase text-[var(--ink-soft)] tracking-wider mb-4">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-6 rounded-lg shadow-card h-full text-[var(--ink)]">
+      <h3 className="text-sm font-bold uppercase text-[var(--ink-soft)] tracking-wider mb-4 font-display">
         Document Checklist
       </h3>
 
-      <div className="hairline-divide flex flex-col">
+      <div className="flex flex-col divide-y divide-[var(--border-color)]">
         {(Object.keys(docLabels) as Array<keyof DocumentChecklist>).map((key) => {
           const status = documents[key]
-          const isReceived = status === 'Received'
 
           return (
             <div
               key={key}
               onClick={() => onToggle?.(key)}
-              className="flex items-center justify-between py-3 cursor-pointer hover:bg-[var(--canvas)] px-2 -mx-2 rounded-lg transition-colors"
+              className="flex items-center justify-between py-3 cursor-pointer hover:bg-[var(--bg-hover)] px-2 -mx-2 rounded-lg transition-colors"
             >
               <span className="text-sm font-semibold text-[var(--ink)]">{docLabels[key]}</span>
               
-              <span 
-                className="text-[11px] font-bold px-2.5 py-0.5 rounded-lg select-none"
-                style={{
-                  color: isReceived ? goodColors.color : waitingColors.color,
-                  backgroundColor: isReceived ? goodColors.bg : waitingColors.bg,
-                }}
-              >
-                {status}
-              </span>
+              <StatusBadge status={status} />
             </div>
           )
         })}
